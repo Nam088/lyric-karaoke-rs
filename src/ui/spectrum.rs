@@ -11,7 +11,7 @@ use iocraft::prelude::*;
 
 use crate::analysis::Analyzer;
 use crate::braille::Canvas;
-use crate::config;
+use crate::color::Theme;
 
 /// How the spectrum is drawn, or whether it is drawn at all. Cycled with `S`.
 #[derive(Clone, Copy, PartialEq, Eq, Debug, Default)]
@@ -73,11 +73,11 @@ enum Layer {
 }
 
 impl Layer {
-    fn color(self) -> Color {
+    fn color(self, theme: &Theme) -> Color {
         match self {
-            Layer::Peak => config::SPECTRUM_PEAK,
-            Layer::Edge => config::SPECTRUM_EDGE,
-            _ => config::SPECTRUM_FILL,
+            Layer::Peak => theme.spectrum_peak,
+            Layer::Edge => theme.spectrum_edge,
+            _ => theme.spectrum_fill,
         }
     }
 }
@@ -199,6 +199,7 @@ pub fn render(
     cells_w: usize,
     cells_h: usize,
     style: Style,
+    theme: &Theme,
 ) -> AnyElement<'static> {
     if style == Style::Bars {
         let rows: Vec<AnyElement<'static>> = bars(a, cells_w, cells_h)
@@ -207,9 +208,9 @@ pub fn render(
             .map(|(r, row)| {
                 // Brighter at the top, so tall bars read as peaks.
                 let color = if r == 0 {
-                    config::SPECTRUM_EDGE
+                    theme.spectrum_edge
                 } else {
-                    config::SPECTRUM_FILL
+                    theme.spectrum_fill
                 };
                 element! { Text(color: color, content: row) }.into()
             })
@@ -243,7 +244,7 @@ pub fn render(
             let spans: Vec<AnyElement<'static>> = runs(&fr[r], &er[r], &pr[r])
                 .into_iter()
                 .map(|(text, layer)| {
-                    element! { Text(color: layer.color(), content: text) }.into()
+                    element! { Text(color: layer.color(theme), content: text) }.into()
                 })
                 .collect();
 
@@ -378,7 +379,8 @@ mod tests {
 
     /// Where a rendered row starts, in columns from the left.
     fn left_edge(a: &Analyzer, cells_w: usize, style: Style) -> Vec<usize> {
-        let mut e = render(a, cells_w, 2, style);
+        let theme = Theme::default();
+        let mut e = render(a, cells_w, 2, style, &theme);
         let mut buf = Vec::new();
         e.render(Some(60)).write(&mut buf).unwrap();
         String::from_utf8_lossy(&buf)

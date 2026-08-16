@@ -12,7 +12,7 @@ use iocraft::prelude::*;
 use unicode_segmentation::UnicodeSegmentation;
 
 use super::Session;
-use crate::color;
+use crate::color::{self, Theme};
 use crate::config;
 use crate::lyrics::Sentence;
 
@@ -35,8 +35,9 @@ fn filled_graphemes(text: &str, now: i64, start: i64, end: i64) -> usize {
     ((progress * total as f32).ceil() as usize).min(total)
 }
 
+/// Slice a string by grapheme cluster indices.
 #[cfg(test)]
-fn take_graphemes(text: &str, range: std::ops::Range<usize>) -> String {
+fn slice_graphemes(text: &str, range: std::ops::Range<usize>) -> String {
     text.graphemes(true)
         .skip(range.start)
         .take(range.end.saturating_sub(range.start))
@@ -59,7 +60,7 @@ type Span = (String, Color);
 
 /// The word currently being sung or transitioning, split into graphemes with
 /// smooth afterglow decay, highlight peak, and anticipation.
-fn singing_word(text: &str, now: i64, start: i64, end: i64) -> Vec<Span> {
+fn singing_word(text: &str, now: i64, start: i64, end: i64, theme: &Theme) -> Vec<Span> {
     let graphemes: Vec<&str> = text.graphemes(true).collect();
     let total = graphemes.len();
     if total == 0 {
@@ -68,7 +69,7 @@ fn singing_word(text: &str, now: i64, start: i64, end: i64) -> Vec<Span> {
 
     let duration = (end - start).max(0);
     if duration == 0 {
-        return vec![(text.to_string(), config::LYRIC_PAST)];
+        return vec![(text.to_string(), theme.lyric_past)];
     }
 
     let mut spans: Vec<Span> = Vec::with_capacity(total);
@@ -82,7 +83,7 @@ fn singing_word(text: &str, now: i64, start: i64, end: i64) -> Vec<Span> {
             let until = g_start - now;
             if until <= config::ANTICIPATION_MS && config::ANTICIPATION_MS > 0 {
                 let warm = 1.0 - (until as f32 / config::ANTICIPATION_MS as f32);
-                color::mix(config::LYRIC_SINGING, config::LYRIC_HIT, warm * 0.45)
+                color::mix(theme.lyric_singing, theme.lyric_hit, warm * 0.45)
             } else {
                 // Subtle wave ripple across future graphemes
                 let wave = ((now as f64 / config::WAVE_SPEED_MS
@@ -91,29 +92,27 @@ fn singing_word(text: &str, now: i64, start: i64, end: i64) -> Vec<Span> {
                     * config::WAVE_INTENSITY as f64)
                     .max(0.0) as f32;
                 if wave > 0.001 {
-                    color::mix(config::LYRIC_SINGING, config::LYRIC_HIT, wave)
+                    color::mix(theme.lyric_singing, theme.lyric_hit, wave)
                 } else {
-                    config::LYRIC_SINGING
+                    theme.lyric_singing
                 }
             }
         } else if now < g_end {
             let p = (now - g_start) as f32 / g_dur as f32;
-            color::mix(config::LYRIC_HIT_PEAK, config::LYRIC_HIT, p)
+            color::mix(theme.lyric_hit_peak, theme.lyric_hit, p)
         } else {
             let since = now - g_end;
             if since <= config::AFTERGLOW_DURATION_MS && config::AFTERGLOW_DURATION_MS > 0 {
                 let decay = since as f32 / config::AFTERGLOW_DURATION_MS as f32;
-                color::mix(config::LYRIC_HIT, config::LYRIC_PAST, decay)
+                color::mix(theme.lyric_hit, theme.lyric_past, decay)
             } else {
-                config::LYRIC_PAST
+                theme.lyric_past
             }
         };
 
-        if let Some((prev_text, prev_color)) = spans.last_mut() {
-            if *prev_color == color {
-                prev_text.push_str(g);
-                continue;
-            }
+        if let Some((prev_text, _)) = spans.last_mut().filter(|(_, c)| *c == color) {
+            prev_text.push_str(g);
+            continue;
         }
         spans.push((g.to_string(), color));
     }
@@ -123,44 +122,41 @@ fn singing_word(text: &str, now: i64, start: i64, end: i64) -> Vec<Span> {
 
 /// The active line, word by word, with a separator *between* words rather
 /// than after each one.
-///
-/// The trailing space mattered. It made the active line one column wider than
-/// the same words on any other line, so the text sat off centre and the right
-/// hand marker was pushed further out than the left one.
-fn active_spans(sentence: &Sentence, now: i64) -> Vec<Span> {
+fn active_spans(sentence: &Sentence, now: i64, theme: &Theme) -> Vec<Span> {
     let mut out = Vec::with_capacity(sentence.words.len() * 3);
 
     for (i, w) in sentence.words.iter().enumerate() {
         if i > 0 {
             let prev_end = sentence.words[i - 1].end_time;
             let space_color = if now >= w.start_time {
-                config::LYRIC_PAST
+                theme.lyric_past
             } else if now >= prev_end {
                 let since = now - prev_end;
                 if since <= config::AFTERGLOW_DURATION_MS && config::AFTERGLOW_DURATION_MS > 0 {
                     let decay = since as f32 / config::AFTERGLOW_DURATION_MS as f32;
-                    color::mix(config::LYRIC_HIT, config::LYRIC_PAST, decay)
+                    color::mix(theme.lyric_hit, theme.lyric_past, decay)
                 } else {
-                    config::LYRIC_PAST
+                    theme.lyric_past
                 }
             } else {
-                config::LYRIC_SINGING
+                theme.lyric_singing
             };
             out.push((" ".to_string(), space_color));
         }
 
         if now >= w.end_time + config::AFTERGLOW_DURATION_MS {
-            out.push((w.data.clone(), config::LYRIC_PAST));
+            out.push((w.data.clone(), theme.lyric_past));
         } else if now + config::ANTICIPATION_MS < w.start_time {
-            out.push((w.data.clone(), config::LYRIC_SINGING));
+            out.push((w.data.clone(), theme.lyric_singing));
         } else {
-            out.extend(singing_word(&w.data, now, w.start_time, w.end_time));
+            out.extend(singing_word(&w.data, now, w.start_time, w.end_time, theme));
         }
     }
 
     out
 }
 
+#[allow(clippy::too_many_arguments)]
 pub fn render(
     sentence: &Sentence,
     now: i64,
@@ -168,6 +164,7 @@ pub fn render(
     distance: f32,
     gap_is_active: bool,
     margin_bottom: u32,
+    theme: &Theme,
     session: Option<Arc<Session>>,
 ) -> AnyElement<'static> {
     let is_active = status == Status::Active;
@@ -179,15 +176,6 @@ pub fn render(
     }
 
     let fade = color::distance_fade(distance);
-
-    // The marker sits on the line being sung and nowhere else.
-    //
-    // The TypeScript build put it on every line within one step of the centre
-    // and dimmed the neighbours to near black to hide them. That only works on
-    // a terminal whose background really is black; on any other theme three
-    // lines wore the marker at once. An instrumental break does not get one
-    // either, because it is already a row of musical notes and two sets of
-    // symbols on one line read as noise.
     let show_indicator = is_active && !sentence.is_gap;
     let symbol = config::MUSIC_NOTES[((now as f64 / config::DANCING_INDICATOR_MS) as usize)
         % config::MUSIC_NOTES.len()];
@@ -196,7 +184,6 @@ pub fn render(
         let alt = ((now as f64 / config::GAP_PATTERN_MS) as i64) % 2 == 0;
         let pattern = if alt { config::GAP_TEXT } else { config::GAP_ALT_TEXT };
         if is_active {
-            // Per-character twinkling for the active instrumental break
             pattern
                 .chars()
                 .enumerate()
@@ -207,52 +194,48 @@ pub fn render(
                         * 0.5
                         + 0.5) as f32;
                     let c = color::mix(
-                        config::KEYBINDS_HIGHLIGHT,
-                        config::LYRIC_HIT_PEAK,
+                        theme.highlight,
+                        theme.lyric_hit_peak,
                         twinkle * config::GAP_TWINKLE_INTENSITY,
                     );
                     span(ch.to_string(), c, true)
                 })
                 .collect()
         } else {
-            let c = color::fade(config::LYRIC_PAST, fade, config::DARK_BASE);
+            let c = color::fade(theme.lyric_past, fade, theme.dark_base);
             vec![span(pattern.to_string(), c, true)]
         }
     } else if !is_active {
         let base = if status == Status::Past {
-            config::LYRIC_PAST
+            theme.lyric_past
         } else {
             if distance < 1.0 {
-                // Approaching upcoming line: sine-eased warm up
                 let approach = (1.0 - distance).clamp(0.0, 1.0);
                 let eased = (approach * std::f32::consts::FRAC_PI_2).sin();
-                color::mix(config::LYRIC_FUTURE, config::LYRIC_SINGING, eased * 0.75)
+                color::mix(theme.lyric_future, theme.lyric_singing, eased * 0.75)
             } else {
-                config::LYRIC_FUTURE
+                theme.lyric_future
             }
         };
-        let c = color::fade(base, fade, config::DARK_BASE);
+        let c = color::fade(base, fade, theme.dark_base);
         vec![span(sentence.text(), c, false)]
     } else {
         // Breathing glow: subtle brightness pulse on the active line
         let breath = ((now as f64 / config::BREATHING_SPEED_MS).sin() * 0.5 + 0.5) as f32;
         let boost = breath * config::BREATHING_INTENSITY;
-        active_spans(sentence, now)
+        active_spans(sentence, now, theme)
             .into_iter()
             .map(|(t, c)| {
-                let glowing = color::mix(c, config::LYRIC_HIT_PEAK, boost);
+                let glowing = color::mix(c, theme.lyric_hit_peak, boost);
                 span(t, glowing, true)
             })
             .collect()
     };
 
-    // Both markers are the same glyph, so whatever width the terminal gives it
-    // they stay balanced around the words. The reserved column stays put even
-    // when nothing is drawn in it, so lines do not shift as the marker moves.
     let indicator = || -> Vec<AnyElement<'static>> {
         if show_indicator {
             let pulse = ((now as f64 / 350.0).sin() * 0.5 + 0.5) as f32;
-            let ind_color = color::mix(config::LYRIC_HIT, config::LYRIC_HIT_PEAK, pulse * 0.5);
+            let ind_color = color::mix(theme.lyric_hit, theme.lyric_hit_peak, pulse * 0.5);
             vec![element! {
                 Text(color: ind_color, weight: Weight::Bold, content: symbol)
             }
@@ -316,7 +299,8 @@ mod tests {
 
     /// Plain text of a rendered line, escape codes stripped.
     fn drawn(sentence: &Sentence, status: Status, gap_is_active: bool) -> String {
-        let mut e = render(sentence, 1_500, status, 0.0, gap_is_active, 0, None);
+        let theme = Theme::default();
+        let mut e = render(sentence, 1_500, status, 0.0, gap_is_active, 0, &theme, None);
         let mut buf = Vec::new();
         e.render(Some(60)).write(&mut buf).unwrap();
         String::from_utf8_lossy(&buf).replace('\n', "")
@@ -355,8 +339,9 @@ mod tests {
         // centring off and pushed the right hand marker outward.
         let s = line(&[("Đừng", 0, 500), ("về", 500, 900), ("trễ", 900, 1400)]);
 
+        let theme = Theme::default();
         for now in [0, 700, 1_200, 5_000] {
-            let text = joined(&active_spans(&s, now));
+            let text = joined(&active_spans(&s, now, &theme));
             assert_eq!(text, s.text(), "at {now}ms");
             assert!(!text.ends_with(' '), "trailing space at {now}ms");
         }
@@ -397,39 +382,40 @@ mod tests {
     #[test]
     fn slicing_by_grapheme_never_splits_a_character() {
         let s = "be\u{0302}\u{0301}o";
-        assert_eq!(take_graphemes(s, 0..1), "b");
-        assert_eq!(take_graphemes(s, 1..2), "e\u{0302}\u{0301}");
-        assert_eq!(take_graphemes(s, 2..3), "o");
-        assert_eq!(take_graphemes(s, 0..99), s);
+        assert_eq!(slice_graphemes(s, 0..1), "b");
+        assert_eq!(slice_graphemes(s, 1..2), "e\u{0302}\u{0301}");
+        assert_eq!(slice_graphemes(s, 2..3), "o");
+        assert_eq!(slice_graphemes(s, 0..99), s);
         // A backwards range yields nothing rather than panicking.
         #[allow(clippy::reversed_empty_ranges)]
-        let backwards = take_graphemes(s, 5..2);
+        let backwards = slice_graphemes(s, 5..2);
         assert_eq!(backwards, "");
     }
 
     #[test]
     fn singing_word_transitions_smoothly_through_states() {
+        let theme = Theme::default();
         let word = "hát";
         // Before anticipation: pure singing color
-        let before = singing_word(word, 0, 1000, 2000);
+        let before = singing_word(word, 0, 1000, 2000, &theme);
         assert_eq!(joined(&before), word);
-        assert_eq!(before[0].1, config::LYRIC_SINGING);
+        assert_eq!(before[0].1, theme.lyric_singing);
 
         // During anticipation: warm up
-        let warm = singing_word(word, 900, 1000, 2000);
+        let warm = singing_word(word, 900, 1000, 2000, &theme);
         assert_eq!(joined(&warm), word);
 
         // Mid singing: active character is lit
-        let mid = singing_word(word, 1500, 1000, 2000);
+        let mid = singing_word(word, 1500, 1000, 2000, &theme);
         assert_eq!(joined(&mid), word);
 
         // Just finished: afterglow is active (not yet fully LYRIC_PAST)
-        let just_finished = singing_word(word, 2050, 1000, 2000);
+        let just_finished = singing_word(word, 2050, 1000, 2000, &theme);
         assert_eq!(joined(&just_finished), word);
 
         // Long after: fully LYRIC_PAST
-        let long_past = singing_word(word, 5000, 1000, 2000);
+        let long_past = singing_word(word, 5000, 1000, 2000, &theme);
         assert_eq!(joined(&long_past), word);
-        assert_eq!(long_past[0].1, config::LYRIC_PAST);
+        assert_eq!(long_past[0].1, theme.lyric_past);
     }
 }

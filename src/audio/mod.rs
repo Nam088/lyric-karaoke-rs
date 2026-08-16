@@ -121,16 +121,9 @@ impl Audio {
         let clamped = ms.clamp(0, self.total_ms());
         let target = Duration::from_millis(clamped as u64);
 
-        if self.player.empty() {
-            if self.reload_source().is_ok() {
-                let _ = self.player.try_seek(target);
-                self.player.play();
-            }
-        } else if self.player.try_seek(target).is_err() {
-            if self.reload_source().is_ok() {
-                let _ = self.player.try_seek(target);
-                self.player.play();
-            }
+        if (self.player.empty() || self.player.try_seek(target).is_err()) && self.reload_source().is_ok() {
+            let _ = self.player.try_seek(target);
+            self.player.play();
         }
     }
 

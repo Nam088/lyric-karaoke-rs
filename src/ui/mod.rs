@@ -19,6 +19,7 @@ use iocraft::prelude::*;
 
 use crate::analysis::{envelope::Envelope, Analyzer, FFT_SIZE};
 use crate::audio::Audio;
+use crate::color;
 use crate::config;
 use crate::lyrics::{self, Sentence};
 use layout::Layout;
@@ -47,6 +48,7 @@ pub fn App(props: &AppProps, mut hooks: Hooks) -> impl Into<AnyElement<'static>>
     let mut show_note = hooks.use_state(|| config::SHOW_NOTE);
     let mut render_past = hooks.use_state(|| config::RENDER_PAST_ON_START);
     let mut should_exit = hooks.use_state(|| false);
+    let mut color_theme = hooks.use_state(|| config::DEFAULT_THEME);
     // The config decides where the cycle starts; the S key moves it from there.
     let mut spectrum_style = hooks.use_state(|| {
         if config::SHOW_SPECTRUM {
@@ -98,6 +100,9 @@ pub fn App(props: &AppProps, mut hooks: Hooks) -> impl Into<AnyElement<'static>>
             KeyCode::Char('s') | KeyCode::Char('S') => {
                 spectrum_style.set(spectrum_style.get().next());
             }
+            KeyCode::Char('c') | KeyCode::Char('C') => {
+                color_theme.set(color_theme.get().next());
+            }
             KeyCode::Char('n') | KeyCode::Char('N') => {
                 let v = show_note.get();
                 show_note.set(!v);
@@ -129,6 +134,9 @@ pub fn App(props: &AppProps, mut hooks: Hooks) -> impl Into<AnyElement<'static>>
     let total = session.audio.total_ms();
     let is_playing = session.audio.is_playing();
 
+    let theme_preset = color_theme.get();
+    let theme = theme_preset.theme();
+
     let layout =
         Layout::measure_with(term_w as usize, term_h as usize, spectrum_style.get().is_visible());
     let inner = layout.inner_width;
@@ -139,12 +147,12 @@ pub fn App(props: &AppProps, mut hooks: Hooks) -> impl Into<AnyElement<'static>>
         a.note
     };
 
-    let lines = visible_lines(session.clone(), now, render_past.get(), &layout);
+    let lines = visible_lines(session.clone(), now, render_past.get(), &layout, &theme);
 
     let spectrum = {
         let a = analyzer.lock().unwrap();
         (layout.spectrum_rows > 0)
-            .then(|| spectrum::render(&a, inner, layout.spectrum_rows, spectrum_style.get()))
+            .then(|| spectrum::render(&a, inner, layout.spectrum_rows, spectrum_style.get(), &theme))
     };
 
     element! {
@@ -157,7 +165,7 @@ pub fn App(props: &AppProps, mut hooks: Hooks) -> impl Into<AnyElement<'static>>
             View(
                 flex_direction: FlexDirection::Column,
                 border_style: BorderStyle::Round,
-                border_color: config::PRIMARY_BORDER,
+                border_color: theme.border,
                 padding_left: 5,
                 padding_right: 5,
                 padding_top: layout.padding_y(),
@@ -172,9 +180,11 @@ pub fn App(props: &AppProps, mut hooks: Hooks) -> impl Into<AnyElement<'static>>
                     show_note.get(),
                     show_keybinds.get(),
                     spectrum_style.get(),
+                    theme_preset,
+                    &theme,
                     Some(session.clone()),
                 ))
-                #(rule(&layout))
+                #(rule(&layout, &theme))
 
                 View(
                     flex_direction: FlexDirection::Column,
@@ -186,7 +196,7 @@ pub fn App(props: &AppProps, mut hooks: Hooks) -> impl Into<AnyElement<'static>>
                     #(lines)
                 }
 
-                #(rule(&layout))
+                #(rule(&layout, &theme))
 
                 // Percentage rather than a column count. A child pinned to
                 // exactly the content width makes a full width sibling
@@ -202,6 +212,7 @@ pub fn App(props: &AppProps, mut hooks: Hooks) -> impl Into<AnyElement<'static>>
                         config::SONG_NAME,
                         now,
                         (inner as f32 * config::TICKER_WIDTH_RATIO) as usize,
+                        &theme,
                     )))
                     #(spectrum)
                     #(footer::timeline(
@@ -209,10 +220,11 @@ pub fn App(props: &AppProps, mut hooks: Hooks) -> impl Into<AnyElement<'static>>
                         now,
                         total,
                         (inner as f32 * config::TIMELINE_WIDTH_RATIO) as usize,
+                        &theme,
                         Some(session.clone()),
                     ))
                     #(layout.show_transport
-                        .then(|| footer::transport(session.clone(), now, is_playing)))
+                        .then(|| footer::transport(session.clone(), now, is_playing, &theme)))
                 }
             }
         }
@@ -220,11 +232,11 @@ pub fn App(props: &AppProps, mut hooks: Hooks) -> impl Into<AnyElement<'static>>
 }
 
 /// A horizontal rule, when there is room for one.
-fn rule(layout: &Layout) -> Option<AnyElement<'static>> {
+fn rule(layout: &Layout, theme: &color::Theme) -> Option<AnyElement<'static>> {
     layout.show_rules.then(|| {
         element! {
             Text(
-                color: config::TIMELINE_REMAINING,
+                color: theme.remaining,
                 content: config::SEPARATOR_HORIZONTAL.repeat(layout.inner_width),
             )
         }
@@ -238,11 +250,12 @@ fn visible_lines(
     now: i64,
     render_past: bool,
     layout: &Layout,
+    theme: &color::Theme,
 ) -> Vec<AnyElement<'static>> {
     let sentences = &session.sentences;
     if sentences.is_empty() {
         return vec![element! {
-            Text(color: config::PAUSED_INDICATOR, content: "No lyrics loaded.")
+            Text(color: theme.paused, content: "No lyrics loaded.")
         }
         .into()];
     }
@@ -300,6 +313,7 @@ fn visible_lines(
                 (idx as f32 - active_float).abs(),
                 gap_is_active,
                 spacing,
+                theme,
                 Some(session.clone()),
             )
         })
@@ -364,6 +378,7 @@ mod tests {
         a.levels = vec![0.5; l.inner_width * 2];
         a.peaks = vec![0.9; l.inner_width * 2];
 
+        let theme = color::Theme::default();
         for style in Style::DRAWN {
             let panel = element! {
                 View(
@@ -375,7 +390,7 @@ mod tests {
                     padding_right: 5,
                 ) {
                     Text(content: "─".repeat(l.inner_width))
-                    #(spectrum::render(&a, l.inner_width, l.spectrum_rows, style))
+                    #(spectrum::render(&a, l.inner_width, l.spectrum_rows, style, &theme))
                 }
             };
 
@@ -409,11 +424,12 @@ mod tests {
         a.levels = vec![0.7; width * 2];
         a.peaks = vec![0.95; width * 2];
 
+        let theme = color::Theme::default();
         for style in Style::DRAWN {
             let with_slack = element! {
                 View(width: (width + 1) as u32, flex_direction: FlexDirection::Column) {
-                    Text(content: "\u{2500}".repeat(width))
-                    #(spectrum::render(&a, width, rows, style))
+                    Text(content: "─".repeat(width))
+                    #(spectrum::render(&a, width, rows, style, &theme))
                 }
             };
             assert_eq!(
@@ -427,6 +443,7 @@ mod tests {
     #[test]
     fn the_measured_height_matches_what_gets_drawn() {
         let l = Layout::measure_with(80, 24, true);
+        let theme = color::Theme::default();
 
         let chrome = element! {
             View(
@@ -440,7 +457,7 @@ mod tests {
                 padding_bottom: l.padding_y(),
             ) {
                 Text(content: "header")
-                #(rule(&l))
+                #(rule(&l, &theme))
                 View(
                     flex_direction: FlexDirection::Column,
                     align_items: AlignItems::Center,
@@ -452,7 +469,7 @@ mod tests {
                         View(margin_bottom: l.line_spacing as u32) { Text(content: "lyric") }
                     }))
                 }
-                #(rule(&l))
+                #(rule(&l, &theme))
                 View(flex_direction: FlexDirection::Column, width: 100pct, margin_top: 1) {
                     #(l.show_ticker.then(|| -> AnyElement<'static> {
                         element! { Text(content: "ticker") }.into()

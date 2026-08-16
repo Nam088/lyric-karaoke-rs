@@ -7,6 +7,7 @@ use iocraft::prelude::*;
 use super::Session;
 use crate::analysis::envelope::Envelope;
 use crate::braille::Canvas;
+use crate::color::Theme;
 use crate::{config, lyrics};
 
 /// `mm:ss`.
@@ -22,7 +23,7 @@ pub fn long_time(ms: i64) -> String {
 }
 
 /// Song title scrolling sideways, news ticker style.
-pub fn ticker(title: &str, now: i64, width: usize) -> AnyElement<'static> {
+pub fn ticker(title: &str, now: i64, width: usize, theme: &Theme) -> AnyElement<'static> {
     let width = width.max(10);
 
     // Short titles need more breathing room between repeats or the loop is
@@ -42,7 +43,7 @@ pub fn ticker(title: &str, now: i64, width: usize) -> AnyElement<'static> {
 
     element! {
         View(width: width as u32, justify_content: JustifyContent::Center) {
-            Text(color: config::TICKER_TEXT, weight: Weight::Bold, content: visible)
+            Text(color: theme.ticker, weight: Weight::Bold, content: visible)
         }
     }
     .into()
@@ -58,7 +59,7 @@ pub fn ticker(title: &str, now: i64, width: usize) -> AnyElement<'static> {
 /// reflow the whole panel a few seconds into the song.
 pub const WAVEFORM_ROWS: usize = 2;
 
-fn waveform(points: &[f32], progress: f32, cells_w: usize) -> AnyElement<'static> {
+fn waveform(points: &[f32], progress: f32, cells_w: usize, theme: &Theme) -> AnyElement<'static> {
     const ROWS: usize = WAVEFORM_ROWS;
     let mut canvas = Canvas::new(cells_w, ROWS);
     let (w, h) = (canvas.width(), canvas.height());
@@ -87,8 +88,8 @@ fn waveform(points: &[f32], progress: f32, cells_w: usize) -> AnyElement<'static
             let ahead: String = chars[played_cells..].iter().collect();
             element! {
                 View(flex_direction: FlexDirection::Row) {
-                    Text(color: config::WAVEFORM_PLAYED, content: played)
-                    Text(color: config::WAVEFORM_AHEAD, content: ahead)
+                    Text(color: theme.elapsed, content: played)
+                    Text(color: theme.remaining, content: ahead)
                 }
             }
             .into()
@@ -128,21 +129,22 @@ fn progress_bar(
     width: usize,
     session: Option<Arc<Session>>,
     total_ms: i64,
+    theme: &Theme,
 ) -> AnyElement<'static> {
     let (filled, empty) = bar_parts(progress, width);
     let usable = filled + empty; // width - 1 (marker takes one column)
 
-    let marker_color = config::KEYBINDS_HIGHLIGHT;
+    let marker_color = theme.highlight;
 
     let mut spans: Vec<AnyElement<'static>> = Vec::with_capacity(width);
 
     for col in 0..width {
         let (ch, col_color, bold) = if col < filled {
-            (config::TIMELINE_FILLED, config::TIMELINE_ELAPSED, false)
+            (config::TIMELINE_FILLED, theme.elapsed, false)
         } else if col == filled {
             (config::TIMELINE_MARKER, marker_color, true)
         } else {
-            (config::TIMELINE_EMPTY, config::TIMELINE_REMAINING, false)
+            (config::TIMELINE_EMPTY, theme.remaining, false)
         };
 
         let text = element! {
@@ -182,6 +184,7 @@ pub fn timeline(
     position_ms: i64,
     total_ms: i64,
     width: usize,
+    theme: &Theme,
     session: Option<Arc<Session>>,
 ) -> AnyElement<'static> {
     let width = width.max(10);
@@ -198,18 +201,18 @@ pub fn timeline(
         let points = envelope
             .resampled(width * 2)
             .unwrap_or_else(|| vec![0.0; width * 2]);
-        waveform(&points, progress, width)
+        waveform(&points, progress, width, theme)
     } else {
-        progress_bar(progress, width, session, total_ms)
+        progress_bar(progress, width, session, total_ms, theme)
     };
 
     element! {
         View(flex_direction: FlexDirection::Row, align_items: AlignItems::Center) {
-            Text(color: config::TIMELINE_ELAPSED, content: short_time(position_ms))
-            Text(color: config::TIMELINE_REMAINING, content: config::TIMELINE_CAP_LEFT)
+            Text(color: theme.elapsed, content: short_time(position_ms))
+            Text(color: theme.remaining, content: config::TIMELINE_CAP_LEFT)
             #(body)
-            Text(color: config::TIMELINE_REMAINING, content: config::TIMELINE_CAP_RIGHT)
-            Text(color: config::TIMELINE_ELAPSED, content: short_time(total_ms))
+            Text(color: theme.remaining, content: config::TIMELINE_CAP_RIGHT)
+            Text(color: theme.elapsed, content: short_time(total_ms))
         }
     }
     .into()
@@ -223,11 +226,11 @@ pub fn timeline(
 ///
 /// Every button is the same fixed width, so the row does not twitch when the
 /// play glyph changes.
-pub fn transport(session: Arc<Session>, now: i64, is_playing: bool) -> AnyElement<'static> {
+pub fn transport(session: Arc<Session>, now: i64, is_playing: bool, theme: &Theme) -> AnyElement<'static> {
     let (glyph, color) = if is_playing {
-        ("▌▌", config::LIVE_INDICATOR)
+        ("▌▌", theme.live)
     } else {
-        ("►", config::PAUSED_INDICATOR)
+        ("►", theme.paused)
     };
 
     let back = session.clone();
@@ -242,7 +245,7 @@ pub fn transport(session: Arc<Session>, now: i64, is_playing: bool) -> AnyElemen
             }) {
                 View(width: 8, justify_content: JustifyContent::Center) {
                     Text(
-                        color: config::TIMELINE_REMAINING,
+                        color: theme.remaining,
                         weight: Weight::Bold,
                         content: "|\u{25c4}",
                     )
@@ -261,7 +264,7 @@ pub fn transport(session: Arc<Session>, now: i64, is_playing: bool) -> AnyElemen
             }) {
                 View(width: 8, justify_content: JustifyContent::Center) {
                     Text(
-                        color: config::TIMELINE_REMAINING,
+                        color: theme.remaining,
                         weight: Weight::Bold,
                         content: "\u{25ba}|",
                     )

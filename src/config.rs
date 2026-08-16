@@ -4,8 +4,6 @@
 //! more (`PATHS.AUDIO_FILE`, which `app.tsx` bypassed entirely). Those are
 //! gone. What remains is only what the app actually uses.
 
-use iocraft::prelude::Color;
-
 // ── Strings ────────────────────────────────────────────────────────────
 
 pub const APP_NAME: &str = "Karaoke";
@@ -16,42 +14,14 @@ pub const SONG_FILE: &str = "b.mp3";
 pub const GAP_TEXT: &str = "♫  ♪  ♫  ♪  ♫  ♪  ♫";
 pub const GAP_ALT_TEXT: &str = "♪  ♫  ♪  ♫  ♪  ♫  ♪";
 
-// ── Colours ────────────────────────────────────────────────────────────
+// ── Colours & Themes ───────────────────────────────────────────────────
 
-pub const fn rgb(r: u8, g: u8, b: u8) -> Color {
-    Color::Rgb { r, g, b }
-}
+/// Default color theme on startup. Cycled live with the `C` key.
+pub const DEFAULT_THEME: crate::color::ThemePreset = crate::color::ThemePreset::Emerald;
 
-// UI, monochrome green theme.
-pub const PRIMARY_BORDER: Color = rgb(0x22, 0xC5, 0x5E);
-pub const HEADER_KARAOKE: Color = rgb(0x4A, 0xDE, 0x80);
-pub const LIVE_INDICATOR: Color = rgb(0x22, 0xC5, 0x5E);
-pub const PAUSED_INDICATOR: Color = rgb(0xEA, 0xB3, 0x08);
-pub const TIMELINE_ELAPSED: Color = rgb(0x22, 0xC5, 0x5E);
-pub const TIMELINE_REMAINING: Color = rgb(0x37, 0x41, 0x51);
-pub const TICKER_TEXT: Color = rgb(0x86, 0xEF, 0xAC);
-pub const KEYBINDS_DIM: Color = rgb(0x4B, 0x55, 0x63);
-pub const KEYBINDS_HIGHLIGHT: Color = rgb(0x86, 0xEF, 0xAC);
-
-// Lyrics.
-pub const LYRIC_PAST: Color = rgb(0x16, 0xA3, 0x4A);
-pub const LYRIC_FUTURE: Color = rgb(0x4B, 0x55, 0x63);
-pub const LYRIC_SINGING: Color = rgb(0xF0, 0xFD, 0xF4);
-pub const LYRIC_HIT: Color = rgb(0x4A, 0xDE, 0x80);
-pub const LYRIC_HIT_PEAK: Color = rgb(0xFF, 0xFF, 0xFF);
+// Lyric animation timings
 pub const AFTERGLOW_DURATION_MS: i64 = 240;
 pub const ANTICIPATION_MS: i64 = 150;
-
-// Spectrum.
-pub const SPECTRUM_EDGE: Color = rgb(0xBB, 0xF7, 0xD0); // the bright crest line
-pub const SPECTRUM_FILL: Color = rgb(0x15, 0x80, 0x3D); // dithered body under it
-pub const SPECTRUM_PEAK: Color = rgb(0xF0, 0xFD, 0xF4); // hold markers
-pub const WAVEFORM_PLAYED: Color = rgb(0x22, 0xC5, 0x5E);
-pub const WAVEFORM_AHEAD: Color = rgb(0x37, 0x41, 0x51);
-pub const NOTE_LABEL: Color = rgb(0x86, 0xEF, 0xAC);
-
-/// Dimming base for the distance fade.
-pub const DARK_BASE: (u8, u8, u8) = (0x03, 0x07, 0x12);
 
 // ── Timings, all milliseconds ──────────────────────────────────────────
 

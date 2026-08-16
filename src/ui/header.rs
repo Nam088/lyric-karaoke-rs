@@ -6,7 +6,7 @@ use iocraft::prelude::*;
 
 use super::Session;
 use crate::analysis::pitch::Note;
-use crate::color;
+use crate::color::{self, Theme, ThemePreset};
 use crate::config;
 use crate::ui::footer::long_time;
 use crate::ui::spectrum::Style;
@@ -14,12 +14,12 @@ use crate::ui::spectrum::Style;
 /// A slow brightness sweep across the app name, replacing `ink-motion`'s
 /// `Shimmer`. It is a function of the playback clock, so it stays in step
 /// after a seek and stops dead when paused.
-fn shimmer(now: i64, char_offset: usize) -> Color {
+fn shimmer(now: i64, char_offset: usize, theme: &Theme) -> Color {
     let phase = (now as f64 / 900.0 + char_offset as f64 * config::SHIMMER_CHAR_OFFSET).sin()
         as f32
         * 0.5
         + 0.5;
-    color::mix(config::HEADER_KARAOKE, config::KEYBINDS_HIGHLIGHT, phase)
+    color::mix(theme.header, theme.highlight, phase)
 }
 
 /// The LIVE dot blinks; PAUSED holds steady so the difference is obvious at a
@@ -27,16 +27,17 @@ fn shimmer(now: i64, char_offset: usize) -> Color {
 fn status_label(
     is_playing: bool,
     now: i64,
+    theme: &Theme,
     session: Option<Arc<Session>>,
 ) -> AnyElement<'static> {
     let (content, color, bold) = if !is_playing {
-        (config::PAUSED_LABEL, config::PAUSED_INDICATOR, false)
+        (config::PAUSED_LABEL, theme.paused, false)
     } else {
         let on = ((now as f64 / config::LIVE_BLINK_MS) as i64) % 2 == 0;
         let c = if on {
-            config::LIVE_INDICATOR
+            theme.live
         } else {
-            color::fade(config::LIVE_INDICATOR, 0.55, config::DARK_BASE)
+            color::fade(theme.live, 0.55, theme.dark_base)
         };
         (config::LIVE_LABEL, c, true)
     };
@@ -57,12 +58,7 @@ fn status_label(
 
 /// Note name plus how far off pitch it is. Useful rather than decorative: it
 /// tells the singer what they are aiming at.
-///
-/// Always the same width. Pitch detection drops in and out constantly on real
-/// music, and this label sits in a `SpaceBetween` row, so a shorter version for
-/// silence would drag the clock and the playing indicator sideways several
-/// times a second.
-fn note_label(note: Option<Note>, show: bool) -> Vec<AnyElement<'static>> {
+fn note_label(note: Option<Note>, show: bool, theme: &Theme) -> Vec<AnyElement<'static>> {
     const WIDTH: usize = 10;
 
     if !show {
@@ -72,18 +68,15 @@ fn note_label(note: Option<Note>, show: bool) -> Vec<AnyElement<'static>> {
     let (text, color) = match note {
         Some(n) => {
             let text = format!(" {:<3} {:+3}¢ ", n.name(), n.cents.round() as i32);
-            // Green when close to centre, amber as it drifts.
+            // Close to centre is note_label color, amber as it drifts.
             let off = (n.cents.abs() / 50.0).clamp(0.0, 1.0);
-            (text, color::mix(config::NOTE_LABEL, config::PAUSED_INDICATOR, off))
+            (text, color::mix(theme.note_label, theme.paused, off))
         }
-        None => ("    ---   ".to_string(), config::TIMELINE_REMAINING),
+        None => ("    ---   ".to_string(), theme.remaining),
     };
 
     debug_assert_eq!(text.chars().count(), WIDTH, "note label changed width");
 
-    // Pinned width. The label ends in spaces, the renderer drops trailing
-    // whitespace, and this sits in a SpaceBetween row, so without the wrapper
-    // the clock beside it would shuffle every time a pitch came and went.
     vec![element! {
         View(width: WIDTH as u32, justify_content: JustifyContent::Center) {
             Text(color: color, content: text)
@@ -92,6 +85,7 @@ fn note_label(note: Option<Note>, show: bool) -> Vec<AnyElement<'static>> {
     .into()]
 }
 
+#[allow(clippy::too_many_arguments)]
 pub fn render(
     is_playing: bool,
     position_ms: i64,
@@ -99,16 +93,19 @@ pub fn render(
     show_note: bool,
     show_keybinds: bool,
     style: Style,
+    theme_preset: ThemePreset,
+    theme: &Theme,
     session: Option<Arc<Session>>,
 ) -> AnyElement<'static> {
     let keybinds: Vec<AnyElement<'static>> = if show_keybinds {
         vec![element! {
             View(margin_left: 2) {
                 Text(
-                    color: config::KEYBINDS_DIM,
+                    color: theme.keybinds_dim,
                     content: format!(
-                        "[Space] Play  [←][→] ±5s  [S] spectrum: {}  [N] note  [Q] Quit",
-                        style.name()
+                        "[Space] Play  [←][→] ±5s  [S] spectrum: {}  [C] theme: {}  [N] note  [Q] Quit",
+                        style.name(),
+                        theme_preset.name(),
                     ),
                 )
             }
@@ -124,7 +121,7 @@ pub fn render(
         .map(|(i, ch)| {
             element! {
                 Text(
-                    color: shimmer(position_ms, i),
+                    color: shimmer(position_ms, i, theme),
                     weight: Weight::Bold,
                     content: ch.to_string(),
                 )
@@ -140,17 +137,17 @@ pub fn render(
             }
             #(keybinds)
             View(flex_direction: FlexDirection::Row) {
-                #(note_label(note, show_note))
+                #(note_label(note, show_note, theme))
                 // The divider belongs to the note, not to what follows it.
                 #(show_note.then(|| -> AnyElement<'static> {
                     element! {
-                        Text(color: config::TIMELINE_REMAINING, content: config::VBAR)
+                        Text(color: theme.remaining, content: config::VBAR)
                     }
                     .into()
                 }))
-                #(status_label(is_playing, position_ms, session))
-                Text(color: config::TIMELINE_REMAINING, content: config::VBAR)
-                Text(color: config::TIMELINE_ELAPSED, content: long_time(position_ms))
+                #(status_label(is_playing, position_ms, theme, session))
+                Text(color: theme.remaining, content: config::VBAR)
+                Text(color: theme.elapsed, content: long_time(position_ms))
             }
         }
     }
@@ -164,9 +161,10 @@ mod tests {
 
     #[test]
     fn the_shimmer_stays_inside_the_two_palette_colours() {
+        let theme = Theme::default();
         for t in [0, 450, 900, 1_800, 62_000] {
             for offset in [0, 3, 6] {
-                match shimmer(t, offset) {
+                match shimmer(t, offset, &theme) {
                     Color::Rgb { r, g, b } => {
                         assert!((0x4A..=0x86).contains(&r), "r={r} at t={t}, offset={offset}");
                         assert!((0xDE..=0xEF).contains(&g), "g={g} at t={t}, offset={offset}");
@@ -184,15 +182,13 @@ mod tests {
     }
 
     fn draw(note: Option<Note>) -> String {
-        let mut e = render(true, 62_000, note, true, false, Style::default(), None);
+        let theme = Theme::default();
+        let mut e = render(true, 62_000, note, true, false, Style::default(), ThemePreset::default(), &theme, None);
         let mut buf = Vec::new();
         e.render(Some(70)).write(&mut buf).unwrap();
         String::from_utf8_lossy(&buf).into_owned()
     }
 
-    /// Pitch detection drops in and out constantly on real music. If the label
-    /// changed width with it, the clock next to it would shuffle sideways
-    /// several times a second.
     #[test]
     fn the_clock_does_not_move_when_a_pitch_comes_and_goes() {
         let with = draw(Some(pitch::from_hz(440.0)));
@@ -205,10 +201,10 @@ mod tests {
         );
     }
 
-    /// With the note hidden the header must not leave a gap where it was.
     #[test]
     fn hiding_the_note_leaves_nothing_behind() {
-        let mut e = render(true, 62_000, Some(pitch::from_hz(440.0)), false, false, Style::default(), None);
+        let theme = Theme::default();
+        let mut e = render(true, 62_000, Some(pitch::from_hz(440.0)), false, false, Style::default(), ThemePreset::default(), &theme, None);
         let mut buf = Vec::new();
         e.render(Some(70)).write(&mut buf).unwrap();
         let text = String::from_utf8_lossy(&buf).into_owned();
@@ -227,11 +223,10 @@ mod tests {
 
     #[test]
     fn a_detected_note_renders_and_silence_falls_back() {
-        // Only checking these do not panic and that both paths are reachable.
-        assert_eq!(note_label(None, true).len(), 1);
-        assert_eq!(note_label(Some(pitch::from_hz(440.0)), true).len(), 1);
-        assert!(note_label(Some(pitch::from_hz(440.0)), false).is_empty());
-        // Both paths must be the same width or the row twitches.
-        let _ = render(true, 0, None, true, true, Style::default(), None);
+        let theme = Theme::default();
+        assert_eq!(note_label(None, true, &theme).len(), 1);
+        assert_eq!(note_label(Some(pitch::from_hz(440.0)), true, &theme).len(), 1);
+        assert!(note_label(Some(pitch::from_hz(440.0)), false, &theme).is_empty());
+        let _ = render(true, 0, None, true, true, Style::default(), ThemePreset::default(), &theme, None);
     }
 }
