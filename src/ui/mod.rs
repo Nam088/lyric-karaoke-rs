@@ -19,7 +19,6 @@ use iocraft::prelude::*;
 
 use crate::analysis::{envelope::Envelope, Analyzer, FFT_SIZE};
 use crate::audio::Audio;
-use crate::color;
 use crate::config;
 use crate::lyrics::{self, Sentence};
 use layout::Layout;
@@ -134,17 +133,10 @@ pub fn App(props: &AppProps, mut hooks: Hooks) -> impl Into<AnyElement<'static>>
         Layout::measure_with(term_w as usize, term_h as usize, spectrum_style.get().is_visible());
     let inner = layout.inner_width;
 
-    let (note, bass_energy) = {
+    let note = {
         let mut a = analyzer.lock().unwrap();
         a.resize(inner * 2);
-        (a.note, a.bass_energy())
-    };
-
-    let border_color = if is_playing && bass_energy > 0.15 {
-        let t = ((bass_energy - 0.15) / 0.85).clamp(0.0, 1.0);
-        color::mix(config::PRIMARY_BORDER, config::HEADER_KARAOKE, t * 0.75)
-    } else {
-        config::PRIMARY_BORDER
+        a.note
     };
 
     let lines = visible_lines(&session, now, render_past.get(), &layout);
@@ -165,7 +157,7 @@ pub fn App(props: &AppProps, mut hooks: Hooks) -> impl Into<AnyElement<'static>>
             View(
                 flex_direction: FlexDirection::Column,
                 border_style: BorderStyle::Round,
-                border_color: border_color,
+                border_color: config::PRIMARY_BORDER,
                 padding_left: 5,
                 padding_right: 5,
                 padding_top: layout.padding_y(),
