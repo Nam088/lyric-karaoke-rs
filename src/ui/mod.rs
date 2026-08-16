@@ -172,6 +172,7 @@ pub fn App(props: &AppProps, mut hooks: Hooks) -> impl Into<AnyElement<'static>>
                     show_note.get(),
                     show_keybinds.get(),
                     spectrum_style.get(),
+                    Some(session.clone()),
                 ))
                 #(rule(&layout))
 
@@ -208,6 +209,7 @@ pub fn App(props: &AppProps, mut hooks: Hooks) -> impl Into<AnyElement<'static>>
                         now,
                         total,
                         (inner as f32 * config::TIMELINE_WIDTH_RATIO) as usize,
+                        Some(session.clone()),
                     ))
                     #(layout.show_transport
                         .then(|| footer::transport(session.clone(), now, is_playing)))

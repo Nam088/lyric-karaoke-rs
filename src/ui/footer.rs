@@ -122,33 +122,57 @@ fn bar_parts(progress: f32, width: usize) -> (usize, usize) {
 }
 
 /// The plain bar: elapsed, a marker at the playhead, remaining.
-fn progress_bar(progress: f32, width: usize, now: i64) -> AnyElement<'static> {
+/// Every column is its own clickable `Button` so seeking is precise.
+fn progress_bar(
+    progress: f32,
+    width: usize,
+    session: Option<Arc<Session>>,
+    total_ms: i64,
+) -> AnyElement<'static> {
     let (filled, empty) = bar_parts(progress, width);
+    let usable = filled + empty; // width - 1 (marker takes one column)
 
-    // The marker pulses so it stays findable on a bar that barely moves.
-    let bright = ((now as f64 / config::TIMELINE_BLINK_MS) as i64) % 2 == 0;
-    let marker_color = if bright {
-        config::KEYBINDS_HIGHLIGHT
-    } else {
-        config::TIMELINE_ELAPSED
-    };
+    let marker_color = config::KEYBINDS_HIGHLIGHT;
+
+    let mut spans: Vec<AnyElement<'static>> = Vec::with_capacity(width);
+
+    for col in 0..width {
+        let (ch, col_color, bold) = if col < filled {
+            (config::TIMELINE_FILLED, config::TIMELINE_ELAPSED, false)
+        } else if col == filled {
+            (config::TIMELINE_MARKER, marker_color, true)
+        } else {
+            (config::TIMELINE_EMPTY, config::TIMELINE_REMAINING, false)
+        };
+
+        let text = element! {
+            Text(
+                color: col_color,
+                weight: if bold { Weight::Bold } else { Weight::Normal },
+                content: ch.to_string(),
+            )
+        };
+
+        if let Some(ref s) = session {
+            let s = s.clone();
+            let target = if usable > 0 {
+                (col.min(usable) as f64 / usable as f64 * total_ms as f64) as i64
+            } else {
+                0
+            };
+            spans.push(
+                element! {
+                    Button(handler: move |_| s.audio.seek_ms(target)) { #(text) }
+                }
+                .into(),
+            );
+        } else {
+            spans.push(text.into());
+        }
+    }
 
     element! {
-        View(flex_direction: FlexDirection::Row) {
-            Text(
-                color: config::TIMELINE_ELAPSED,
-                content: config::TIMELINE_FILLED.to_string().repeat(filled),
-            )
-            Text(
-                color: marker_color,
-                weight: Weight::Bold,
-                content: config::TIMELINE_MARKER.to_string(),
-            )
-            Text(
-                color: config::TIMELINE_REMAINING,
-                content: config::TIMELINE_EMPTY.to_string().repeat(empty),
-            )
-        }
+        View(flex_direction: FlexDirection::Row) { #(spans) }
     }
     .into()
 }
@@ -158,6 +182,7 @@ pub fn timeline(
     position_ms: i64,
     total_ms: i64,
     width: usize,
+    session: Option<Arc<Session>>,
 ) -> AnyElement<'static> {
     let width = width.max(10);
     let progress = if total_ms > 0 {
@@ -175,7 +200,7 @@ pub fn timeline(
             .unwrap_or_else(|| vec![0.0; width * 2]);
         waveform(&points, progress, width)
     } else {
-        progress_bar(progress, width, position_ms)
+        progress_bar(progress, width, session, total_ms)
     };
 
     element! {

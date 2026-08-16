@@ -73,7 +73,7 @@ impl Layout {
             box_width,
             inner_width,
             window: config::WINDOW_SIZE,
-            line_spacing: 1,
+            line_spacing: config::LINE_SPACING,
             spectrum_rows: if show_spectrum { config::SPECTRUM_ROWS } else { 0 },
             show_padding: true,
             show_rules: true,
@@ -201,7 +201,7 @@ mod tests {
     fn a_tall_terminal_gets_the_full_design() {
         let l = Layout::measure_with(120, 60, true);
         assert_eq!(l.window, config::WINDOW_SIZE);
-        assert_eq!(l.line_spacing, 1);
+        assert_eq!(l.line_spacing, config::LINE_SPACING);
         assert_eq!(l.spectrum_rows, config::SPECTRUM_ROWS);
         assert!(l.show_padding && l.show_rules && l.show_ticker && l.show_transport);
     }

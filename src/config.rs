@@ -12,7 +12,7 @@ pub const APP_NAME: &str = "Karaoke";
 pub const LIVE_LABEL: &str = "● LIVE";
 pub const PAUSED_LABEL: &str = "⏸ PAUSED";
 pub const SONG_NAME: &str = "Tìm Em - Hngle, Bảo Anh";
-pub const SONG_FILE: &str = "a.mp3";
+pub const SONG_FILE: &str = "b.mp3";
 pub const GAP_TEXT: &str = "♫  ♪  ♫  ♪  ♫  ♪  ♫";
 pub const GAP_ALT_TEXT: &str = "♪  ♫  ♪  ♫  ♪  ♫  ♪";
 
@@ -77,9 +77,31 @@ pub const SEEK_STEP_MS: i64 = 5000;
 // far too expensive to do on every arrow key. `Player::try_seek` is
 // immediate, so there is nothing left to debounce.
 
+// ── Animation ──────────────────────────────────────────────────────────
+//
+// Every effect here is derived from the playback clock (`now`), so it
+// costs nothing beyond arithmetic that was already running.
+
+/// Breathing glow: the active line subtly pulses brighter.
+pub const BREATHING_SPEED_MS: f64 = 600.0;
+pub const BREATHING_INTENSITY: f32 = 0.15;
+
+/// Wave ripple across future graphemes on the active line.
+pub const WAVE_SPEED_MS: f64 = 400.0;
+pub const WAVE_PHASE_OFFSET: f64 = 0.3;
+pub const WAVE_INTENSITY: f32 = 0.12;
+
+/// Twinkling for active instrumental break characters.
+pub const GAP_TWINKLE_SPEED_MS: f64 = 300.0;
+pub const GAP_TWINKLE_PHASE_OFFSET: f64 = 0.7;
+pub const GAP_TWINKLE_INTENSITY: f32 = 0.4;
+
+/// Per-character phase offset for the header shimmer sweep.
+pub const SHIMMER_CHAR_OFFSET: f64 = 0.4;
+
 // ── Symbols ────────────────────────────────────────────────────────────
 
-pub const MUSIC_NOTES: [&str; 4] = [" ♪ ", " ♫ ", " ♬ ", " ♩ "];
+pub const MUSIC_NOTES: [&str; 1] = [" ♪ "];
 pub const SEPARATOR_HORIZONTAL: &str = "─";
 pub const VBAR: &str = " │ ";
 
@@ -89,7 +111,6 @@ pub const TIMELINE_EMPTY: char = '─';
 pub const TIMELINE_MARKER: char = '●';
 pub const TIMELINE_CAP_LEFT: &str = " ╶";
 pub const TIMELINE_CAP_RIGHT: &str = "╴ ";
-pub const TIMELINE_BLINK_MS: f64 = 600.0;
 
 /// Draw the song's loudness over time instead of a plain bar.
 ///
@@ -104,6 +125,9 @@ pub const WAVEFORM_TIMELINE: bool = false;
 /// centre.
 pub const WINDOW_SIZE: usize = 7;
 pub const MAX_BOX_WIDTH: usize = 120;
+
+/// Blank rows between lyric lines (0 = compact/adjacent, 1 = empty row between each).
+pub const LINE_SPACING: usize = 1;
 
 /// Columns left empty either side of the panel.
 ///
@@ -136,5 +160,5 @@ pub const SPECTRUM_ROWS: usize = 4;
 
 // ── Paths ──────────────────────────────────────────────────────────────
 
-pub const LYRIC_JSON: &str = "data/lr2.json";
+pub const LYRIC_JSON: &str = "data/lr.json";
 pub const DATA_DIR: &str = "data";

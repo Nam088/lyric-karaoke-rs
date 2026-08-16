@@ -1,7 +1,6 @@
 # Lyric Karaoke (Rust)
 
-Terminal karaoke player. A port of the React + Ink build, rewritten so it runs
-on Windows as well as macOS and needs no external tools to build or run.
+Terminal karaoke player written in Rust. Features smooth per-grapheme text animation, interactive mouse and keyboard transport, audio spectrum visualizer, pitch detection, and zero-delay clock-derived animations.
 
 ```
 ╭────────────────────────────────────────────────────────────────────────────╮
@@ -23,133 +22,111 @@ on Windows as well as macOS and needs no external tools to build or run.
 ╰────────────────────────────────────────────────────────────────────────────╯
 ```
 
-## Running it
+---
+
+## 🚀 Hướng Dẫn Cài Đặt (Installation)
+
+### 1. Yêu cầu hệ thống (Prerequisites)
+
+* **Rust toolchain** (Cargo & rustc 2024 edition hoặc mới hơn):
+  * **macOS / Linux:**
+    ```bash
+    curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
+    ```
+  * **Windows:** Tải installer từ [rustup.rs](https://rustup.rs/)
+
+* **Hệ điều hành:**
+  * **macOS:** Không cần cài thêm thư viện hệ thống nào (sử dụng CoreAudio mặc định).
+  * **Windows:** Không cần cài thêm thư viện nào.
+  * **Linux:** Cài đặt ALSA development headers:
+    ```bash
+    # Debian / Ubuntu / Mint:
+    sudo apt-get update && sudo apt-get install -y libasound2-dev pkg-config
+    # Fedora / RHEL:
+    sudo dnf install alsa-lib-devel
+    # Arch Linux:
+    sudo pacman -S alsa-lib
+    ```
+
+---
+
+### 2. Cài đặt và Chạy (Build & Run)
 
 ```bash
-# Put an audio file and its lyrics in data/
-#   data/lr.json
-#   data/<song>.mp3
-# Then set SONG_NAME and SONG_FILE in src/config.rs and:
+# Clone repository
+git clone https://github.com/your-username/lyric-karaoke-rs.git
+cd lyric-karaoke-rs
+
+# Cài đặt file nhạc và lời bài hát vào thư mục data/
+#   data/a.mp3 (hoặc file .mp3 bài hát bạn muốn)
+#   data/lr.json (file lyrics định dạng LRC/JSON)
+
+# Chạy ứng dụng:
 cargo run --release
 ```
 
-`--frame` renders a single pass to stdout instead of taking over the terminal,
-which is handy for checking the layout.
+---
 
-### Keys
+## ⚙️ Cấu Hình (Configuration)
 
-| Key | Action |
+Tất cả cấu hình nằm trong file [`src/config.rs`](src/config.rs):
+
+```rust
+// Tên bài hát & File nhạc trong data/
+pub const SONG_NAME: &str = "Tìm Em - Hngle, Bảo Anh";
+pub const SONG_FILE: &str = "a.mp3";
+pub const LYRIC_JSON: &str = "data/lr.json";
+
+// Giao diện
+pub const SHOW_SPECTRUM: bool = false; // Bật/tắt spectrum khi khởi động
+pub const SHOW_NOTE: bool = false;     // Bật/tắt hiển thị nốt nhạc phát hiện
+pub const SHOW_KEYBINDS: bool = false; // Bật/tắt thanh hướng dẫn phím
+pub const LINE_SPACING: usize = 0;     // 0 = các dòng lyric liền kề, 1 = cách 1 dòng trống
+```
+
+---
+
+## 🎮 Điều Khiển (Controls)
+
+### Bằng bàn phím:
+| Phím (Key) | Chức năng (Action) |
 | --- | --- |
-| `Space` | play or pause |
-| `←` `→` | seek five seconds |
-| `S` | cycle the spectrum: curve, mirror, line, bars, off |
-| `N` | show or hide the detected note |
-| `H` | show the key list in the header |
-| `Q` / `Esc` | quit |
+| `Space` | Play / Pause bài hát |
+| `←` / `→` | Tua lùi / Tua tới 5 giây (±5s) |
+| `S` | Đổi kiểu Visualizer Spectrum (`Curve` ➔ `Mirror` ➔ `Line` ➔ `Bars` ➔ `Off`) |
+| `N` | Bật / Tắt hiển thị Nốt nhạc (Pitch Detection & Cents offset) |
+| `H` | Bật / Tắt thanh hướng dẫn phím tắt ở header |
+| `Q` / `Esc` | Thoát chương trình |
 
-## What it needs
+### Bằng chuột (Mouse click support):
+* **Click vào thanh Timeline**: Seek trực tiếp và chính xác đến từng giây bạn bấm.
+* **Click vào `● LIVE` / `⏸ PAUSED`**: Toggle Play / Pause.
+* **Click các nút Transport `|◄`, `▌▌ / ►`, `►|`**: Lùi dòng / Play-Pause / Tới dòng kế tiếp.
 
-Nothing beyond a Rust toolchain. No ffmpeg, no Node, no `node_modules`, no
-system audio libraries on macOS or Windows. `cargo build` and you have a single
-binary you can copy to another machine.
+---
 
-Linux additionally wants the ALSA development headers (`libasound2-dev` on
-Debian and Ubuntu) because that is what cpal links against there.
+## ✨ Tính Năng Nổi Bật (Features)
 
-## How it is put together
+* **Zero-delay Clock-derived Animation**:
+  * **Breathing Glow**: Dòng đang hát phát sáng nhịp nhàng.
+  * **Wave Ripple**: Hiệu ứng sóng nhẹ lướt qua các từ chuẩn bị hát.
+  * **Twinkling Gap**: Các ký tự nốt nhạc ♫♪ lấp lánh khi đến đoạn dạo nhạc.
+  * **Per-char Shimmer**: Ánh sáng quét qua từng ký tự tiêu đề `Karaoke`.
+* **Interactive Seeking**: Tua nhạc mượt mà ngay cả khi bài hát đã chạy hết (tự động reload stream không crash).
+* **Audio Visualizer**: Đo theo tiêu chuẩn IEC 61260 Fractional Octave Bands (40Hz - 16kHz) với 4 phong cách hiển thị khác nhau.
+* **Pitch Detection**: Nhận diện cao độ nốt nhạc và độ lệch (cents) theo thời gian thực.
+* **Unicode & Grapheme cluster aware**: Tương thích hoàn hảo với tiếng Việt có dấu (NFC / NFD decomposition).
 
-```
-src/
-├── main.rs          load everything, then hand off to the UI
-├── config.rs        colours, timings, symbols, layout
-├── lyrics.rs        lr.json, gap injection, which line is active
-├── color.rs         blending
-├── braille.rs       the 2x4 dot drawing surface
-├── audio/
-│   ├── mod.rs       play, pause, seek, position, duration
-│   └── tap.rs       pass through node that copies audio for analysis
-├── analysis/
-│   ├── mod.rs       FFT, band levels, automatic gain, beat detection
-│   ├── bands.rs     IEC 61260 fractional octave bands
-│   ├── pitch.rs     which note is sounding
-│   └── envelope.rs  background loudness scan, for the optional waveform
-└── ui/
-    ├── mod.rs       the root component and the render loop
-    ├── layout.rs    fitting the panel into the terminal
-    ├── header.rs    title, state, clock, note
-    ├── lyric_line.rs one line, with the karaoke fill
-    ├── spectrum.rs  the spectrum curve
-    └── footer.rs    ticker, progress bar, transport
-```
+---
 
-Built on [iocraft](https://github.com/ccbrown/iocraft) for the interface,
-[rodio](https://github.com/RustAudio/rodio) for playback and
-[rustfft](https://crates.io/crates/rustfft) for the analysis.
-
-## One clock
-
-Every frame reads `audio.position_ms()` and derives the whole screen from it.
-Nothing keeps its own timer.
-
-The TypeScript build ran three, none of which was the audio: `useKaraokePlayer`
-counted with `performance.now()`, `AudioPlayer.currentPositionMs` counted with
-`Date.now()` and described itself as approximate, and the header clock and the
-timeline each polled on their own interval. They drifted from each other and
-from the song.
-
-## The visualiser
-
-Four things, all measured from the signal that is playing:
-
-- **A braille canvas.** Each cell is a 2x4 dot matrix, so a four row strip is a
-  16 pixel tall surface at double horizontal resolution. Enough to draw a curve
-  rather than a staircase.
-- **IEC 61260 fractional octave bands**, 40Hz to 16kHz, on standard centre
-  frequencies, summing the power in each. Bands like these are a fixed fraction
-  of an octave wide, so pink noise reads flat and music, being roughly pink,
-  reads roughly flat too. No tilt has to be invented to make it look right.
-- **Automatic gain**, tracking the recent loudest column. A quiet verse and a
-  loud chorus both fill the frame.
-
-Four ways to draw it, cycled with `S`. The measurement is identical for all of
-them; only the picture changes.
-
-```
-curve                              mirror
-⢝⢝⢝⢝⢝⢝⢕⢄⠀⠀⠀⣀⡠⠤⣀⠀⠀⠀⠀⠀⠀⠀    ⢝⢝⢝⢝⢝⢝⣢⢄⣀⣀⣀⣀⣠⢤⣀⡀⠀⠀⠀⠀⠀⠀
-⢕⢕⢕⢕⢕⢕⠭⠵⢍⣉⣩⠴⡲⡲⣢⢕⢄⠀⠀⠀⠀⠀    ⢕⢕⢕⢕⢕⢕⣒⠭⡪⡪⡪⡪⣒⢕⡪⣚⠵⣢⢤⢤⢤⢤
-⢕⢕⢕⢕⢕⢕⠭⠭⠭⡪⣒⠭⡪⡪⣒⠭⠵⢍⠢⠤⠤⢒    ⡪⡪⡪⡪⡪⡪⠭⣒⢕⢕⢕⢕⠭⡪⢕⢭⡲⠝⠚⠚⠚⠚
-⢕⢕⢕⢕⢕⢕⠭⠭⠭⡪⣒⠭⡪⡪⣒⠭⠭⠭⢝⡲⣚⠭    ⣪⣪⣪⣪⣪⣪⠝⠊⠉⠉⠉⠉⠙⠚⠉⠁⠀⠀⠀⠀⠀⠀
-
-line                               bars
-⠉⠉⠉⠉⠉⠉⢕⢄⠀⠀⠀⣀⡠⠤⣀⠀⠀⠀⠀⠀⠀⠀    ██████▃
-⠀⠀⠀⠀⠀⠀⠀⠑⢍⣉⡩⠔⠒⠒⠢⢕⢄⠀⠀⠀⠀⠀    ███████▆▃▂▃▅▆▇▅▃
-⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠑⢍⠢⠤⠤⢒    ████████████████▇▃   ▁▄▇
-⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠉⠒⠊⠁    ███████████████████▆▇███
-```
-
-`bars` is the only one that does not use braille, in case a terminal renders it
-poorly. One more press of `S` switches the spectrum off, and the rows it was
-using go back to the lyrics.
-
-It starts off. The lyrics are the point of the app and the spectrum is
-decoration, so the rows go to the words unless you ask for them back.
-`config::SHOW_SPECTRUM` changes which end of the cycle the app starts on.
-
-The timeline underneath is a plain progress bar. The song's loudness envelope
-is available instead via `config::WAVEFORM_TIMELINE`, though at two rows of
-braille it reads as texture rather than as a position you can judge at a
-glance.
-
-## Testing
+## 🧪 Kiểm Thử (Testing)
 
 ```bash
+# Chạy toàn bộ 98 unit tests:
 cargo test
+
+# Kiểm tra code style & linting:
 cargo clippy --all-targets
 ```
 
-91 tests. The band analysis is checked against the standard: pink noise reads
-flat, white noise rises 3.01dB per octave, a full scale tone reads 0 dBFS, and
-a tone on a band boundary is shared between neighbours rather than lost. The
-rest cover the braille encoding, grapheme aware text fill, the progress bar
-arithmetic, the layout, and the lyric line markers.
+License: MIT

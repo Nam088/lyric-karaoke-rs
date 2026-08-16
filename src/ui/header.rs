@@ -1,7 +1,10 @@
 //! Title, playback state, clock and the detected note.
 
+use std::sync::Arc;
+
 use iocraft::prelude::*;
 
+use super::Session;
 use crate::analysis::pitch::Note;
 use crate::color;
 use crate::config;
@@ -11,29 +14,45 @@ use crate::ui::spectrum::Style;
 /// A slow brightness sweep across the app name, replacing `ink-motion`'s
 /// `Shimmer`. It is a function of the playback clock, so it stays in step
 /// after a seek and stops dead when paused.
-fn shimmer(now: i64) -> Color {
-    let phase = (now as f64 / 900.0).sin() as f32 * 0.5 + 0.5;
+fn shimmer(now: i64, char_offset: usize) -> Color {
+    let phase = (now as f64 / 900.0 + char_offset as f64 * config::SHIMMER_CHAR_OFFSET).sin()
+        as f32
+        * 0.5
+        + 0.5;
     color::mix(config::HEADER_KARAOKE, config::KEYBINDS_HIGHLIGHT, phase)
 }
 
 /// The LIVE dot blinks; PAUSED holds steady so the difference is obvious at a
-/// glance.
-fn status_label(is_playing: bool, now: i64) -> AnyElement<'static> {
-    if !is_playing {
-        return element! {
-            Text(color: config::PAUSED_INDICATOR, content: config::PAUSED_LABEL)
-        }
-        .into();
-    }
-
-    let on = ((now as f64 / config::LIVE_BLINK_MS) as i64) % 2 == 0;
-    let c = if on {
-        config::LIVE_INDICATOR
+/// glance. Clickable to toggle playback when a session is available.
+fn status_label(
+    is_playing: bool,
+    now: i64,
+    session: Option<Arc<Session>>,
+) -> AnyElement<'static> {
+    let (content, color, bold) = if !is_playing {
+        (config::PAUSED_LABEL, config::PAUSED_INDICATOR, false)
     } else {
-        color::fade(config::LIVE_INDICATOR, 0.55, config::DARK_BASE)
+        let on = ((now as f64 / config::LIVE_BLINK_MS) as i64) % 2 == 0;
+        let c = if on {
+            config::LIVE_INDICATOR
+        } else {
+            color::fade(config::LIVE_INDICATOR, 0.55, config::DARK_BASE)
+        };
+        (config::LIVE_LABEL, c, true)
     };
 
-    element! { Text(color: c, weight: Weight::Bold, content: config::LIVE_LABEL) }.into()
+    let weight = if bold { Weight::Bold } else { Weight::Normal };
+
+    if let Some(s) = session {
+        element! {
+            Button(handler: move |_| s.audio.toggle()) {
+                Text(color: color, weight: weight, content: content)
+            }
+        }
+        .into()
+    } else {
+        element! { Text(color: color, weight: weight, content: content) }.into()
+    }
 }
 
 /// Note name plus how far off pitch it is. Useful rather than decorative: it
@@ -80,6 +99,7 @@ pub fn render(
     show_note: bool,
     show_keybinds: bool,
     style: Style,
+    session: Option<Arc<Session>>,
 ) -> AnyElement<'static> {
     let keybinds: Vec<AnyElement<'static>> = if show_keybinds {
         vec![element! {
@@ -98,13 +118,26 @@ pub fn render(
         Vec::new()
     };
 
+    let shimmer_chars: Vec<AnyElement<'static>> = config::APP_NAME
+        .chars()
+        .enumerate()
+        .map(|(i, ch)| {
+            element! {
+                Text(
+                    color: shimmer(position_ms, i),
+                    weight: Weight::Bold,
+                    content: ch.to_string(),
+                )
+            }
+            .into()
+        })
+        .collect();
+
     element! {
         View(justify_content: JustifyContent::SpaceBetween, width: 100pct) {
-            Text(
-                color: shimmer(position_ms),
-                weight: Weight::Bold,
-                content: config::APP_NAME,
-            )
+            View(flex_direction: FlexDirection::Row) {
+                #(shimmer_chars)
+            }
             #(keybinds)
             View(flex_direction: FlexDirection::Row) {
                 #(note_label(note, show_note))
@@ -115,7 +148,7 @@ pub fn render(
                     }
                     .into()
                 }))
-                #(status_label(is_playing, position_ms))
+                #(status_label(is_playing, position_ms, session))
                 Text(color: config::TIMELINE_REMAINING, content: config::VBAR)
                 Text(color: config::TIMELINE_ELAPSED, content: long_time(position_ms))
             }
@@ -132,13 +165,15 @@ mod tests {
     #[test]
     fn the_shimmer_stays_inside_the_two_palette_colours() {
         for t in [0, 450, 900, 1_800, 62_000] {
-            match shimmer(t) {
-                Color::Rgb { r, g, b } => {
-                    assert!((0x4A..=0x86).contains(&r), "r={r} at {t}");
-                    assert!((0xDE..=0xEF).contains(&g), "g={g} at {t}");
-                    assert!((0x80..=0xAC).contains(&b), "b={b} at {t}");
+            for offset in [0, 3, 6] {
+                match shimmer(t, offset) {
+                    Color::Rgb { r, g, b } => {
+                        assert!((0x4A..=0x86).contains(&r), "r={r} at t={t}, offset={offset}");
+                        assert!((0xDE..=0xEF).contains(&g), "g={g} at t={t}, offset={offset}");
+                        assert!((0x80..=0xAC).contains(&b), "b={b} at t={t}, offset={offset}");
+                    }
+                    other => panic!("expected an rgb colour, got {other:?}"),
                 }
-                other => panic!("expected an rgb colour, got {other:?}"),
             }
         }
     }
@@ -149,7 +184,7 @@ mod tests {
     }
 
     fn draw(note: Option<Note>) -> String {
-        let mut e = render(true, 62_000, note, true, false, Style::default());
+        let mut e = render(true, 62_000, note, true, false, Style::default(), None);
         let mut buf = Vec::new();
         e.render(Some(70)).write(&mut buf).unwrap();
         String::from_utf8_lossy(&buf).into_owned()
@@ -173,7 +208,7 @@ mod tests {
     /// With the note hidden the header must not leave a gap where it was.
     #[test]
     fn hiding_the_note_leaves_nothing_behind() {
-        let mut e = render(true, 62_000, Some(pitch::from_hz(440.0)), false, false, Style::default());
+        let mut e = render(true, 62_000, Some(pitch::from_hz(440.0)), false, false, Style::default(), None);
         let mut buf = Vec::new();
         e.render(Some(70)).write(&mut buf).unwrap();
         let text = String::from_utf8_lossy(&buf).into_owned();
@@ -197,6 +232,6 @@ mod tests {
         assert_eq!(note_label(Some(pitch::from_hz(440.0)), true).len(), 1);
         assert!(note_label(Some(pitch::from_hz(440.0)), false).is_empty());
         // Both paths must be the same width or the row twitches.
-        let _ = render(true, 0, None, true, true, Style::default());
+        let _ = render(true, 0, None, true, true, Style::default(), None);
     }
 }

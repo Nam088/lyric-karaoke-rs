@@ -81,7 +81,17 @@ fn singing_word(text: &str, now: i64, start: i64, end: i64) -> Vec<Span> {
                 let warm = 1.0 - (until as f32 / config::ANTICIPATION_MS as f32);
                 color::mix(config::LYRIC_SINGING, config::LYRIC_HIT, warm * 0.45)
             } else {
-                config::LYRIC_SINGING
+                // Subtle wave ripple across future graphemes
+                let wave = ((now as f64 / config::WAVE_SPEED_MS
+                    + k as f64 * config::WAVE_PHASE_OFFSET)
+                    .sin()
+                    * config::WAVE_INTENSITY as f64)
+                    .max(0.0) as f32;
+                if wave > 0.001 {
+                    color::mix(config::LYRIC_SINGING, config::LYRIC_HIT, wave)
+                } else {
+                    config::LYRIC_SINGING
+                }
             }
         } else if now < g_end {
             let p = (now - g_start) as f32 / g_dur as f32;
@@ -181,20 +191,38 @@ pub fn render(
     let words: Vec<AnyElement<'static>> = if sentence.is_gap {
         let alt = ((now as f64 / config::GAP_PATTERN_MS) as i64) % 2 == 0;
         let pattern = if alt { config::GAP_TEXT } else { config::GAP_ALT_TEXT };
-        let c = if is_active {
-            config::KEYBINDS_HIGHLIGHT
+        if is_active {
+            // Per-character twinkling for the active instrumental break
+            pattern
+                .chars()
+                .enumerate()
+                .map(|(i, ch)| {
+                    let twinkle = ((now as f64 / config::GAP_TWINKLE_SPEED_MS
+                        + i as f64 * config::GAP_TWINKLE_PHASE_OFFSET)
+                        .sin()
+                        * 0.5
+                        + 0.5) as f32;
+                    let c = color::mix(
+                        config::KEYBINDS_HIGHLIGHT,
+                        config::LYRIC_HIT_PEAK,
+                        twinkle * config::GAP_TWINKLE_INTENSITY,
+                    );
+                    span(ch.to_string(), c, true)
+                })
+                .collect()
         } else {
-            color::fade(config::LYRIC_PAST, fade, config::DARK_BASE)
-        };
-        vec![span(pattern.to_string(), c, true)]
+            let c = color::fade(config::LYRIC_PAST, fade, config::DARK_BASE);
+            vec![span(pattern.to_string(), c, true)]
+        }
     } else if !is_active {
         let base = if status == Status::Past {
             config::LYRIC_PAST
         } else {
             if distance < 1.0 {
-                // Approaching upcoming line: warm up from FUTURE to SINGING
+                // Approaching upcoming line: sine-eased warm up
                 let approach = (1.0 - distance).clamp(0.0, 1.0);
-                color::mix(config::LYRIC_FUTURE, config::LYRIC_SINGING, approach * 0.75)
+                let eased = (approach * std::f32::consts::FRAC_PI_2).sin();
+                color::mix(config::LYRIC_FUTURE, config::LYRIC_SINGING, eased * 0.75)
             } else {
                 config::LYRIC_FUTURE
             }
@@ -202,9 +230,15 @@ pub fn render(
         let c = color::fade(base, fade, config::DARK_BASE);
         vec![span(sentence.text(), c, false)]
     } else {
+        // Breathing glow: subtle brightness pulse on the active line
+        let breath = ((now as f64 / config::BREATHING_SPEED_MS).sin() * 0.5 + 0.5) as f32;
+        let boost = breath * config::BREATHING_INTENSITY;
         active_spans(sentence, now)
             .into_iter()
-            .map(|(t, c)| span(t, c, true))
+            .map(|(t, c)| {
+                let glowing = color::mix(c, config::LYRIC_HIT_PEAK, boost);
+                span(t, glowing, true)
+            })
             .collect()
     };
 

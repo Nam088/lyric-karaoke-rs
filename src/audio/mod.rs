@@ -33,6 +33,7 @@ pub struct Audio {
     ring: SampleRing,
     total: Duration,
     sample_rate: f32,
+    path: PathBuf,
 }
 
 impl Audio {
@@ -60,7 +61,22 @@ impl Audio {
         let ring = SampleRing::default();
         player.append(SpectrumTap::new(source, ring.clone()));
 
-        Ok(Self { _device: device, player, ring, total, sample_rate })
+        Ok(Self {
+            _device: device,
+            player,
+            ring,
+            total,
+            sample_rate,
+            path: path.to_path_buf(),
+        })
+    }
+
+    fn reload_source(&self) -> Result<()> {
+        self.player.clear();
+        let file = File::open(&self.path)?;
+        let source = Decoder::try_from(file)?;
+        self.player.append(SpectrumTap::new(source, self.ring.clone()));
+        Ok(())
     }
 
     pub fn total_ms(&self) -> i64 {
@@ -78,15 +94,21 @@ impl Audio {
     /// The single source of truth for where the song is. Everything on screen
     /// is derived from this.
     pub fn position_ms(&self) -> i64 {
-        self.player.get_pos().as_millis() as i64
+        if self.player.empty() {
+            self.total_ms()
+        } else {
+            self.player.get_pos().as_millis() as i64
+        }
     }
 
     pub fn is_playing(&self) -> bool {
-        !self.player.is_paused()
+        !self.player.empty() && !self.player.is_paused()
     }
 
     pub fn toggle(&self) {
-        if self.player.is_paused() {
+        if self.player.empty() {
+            self.seek_ms(0);
+        } else if self.player.is_paused() {
             self.player.play();
         } else {
             self.player.pause();
@@ -97,7 +119,19 @@ impl Audio {
     /// caller can drive it straight from a key press.
     pub fn seek_ms(&self, ms: i64) {
         let clamped = ms.clamp(0, self.total_ms());
-        let _ = self.player.try_seek(Duration::from_millis(clamped as u64));
+        let target = Duration::from_millis(clamped as u64);
+
+        if self.player.empty() {
+            if self.reload_source().is_ok() {
+                let _ = self.player.try_seek(target);
+                self.player.play();
+            }
+        } else if self.player.try_seek(target).is_err() {
+            if self.reload_source().is_ok() {
+                let _ = self.player.try_seek(target);
+                self.player.play();
+            }
+        }
     }
 
     pub fn seek_by_ms(&self, delta: i64) {
