@@ -92,6 +92,16 @@ impl Analyzer {
         }
     }
 
+    /// Average energy in the lowest frequency bands (Bass/Kick), normalized 0.0 to 1.0.
+    pub fn bass_energy(&self) -> f32 {
+        if self.levels.is_empty() {
+            return 0.0;
+        }
+        let bass_count = (self.levels.len() / 8).max(2).min(self.levels.len());
+        let sum: f32 = self.levels[..bass_count].iter().sum();
+        (sum / bass_count as f32).clamp(0.0, 1.0)
+    }
+
     /// Advance one frame. `dt` is seconds since the previous call, so the
     /// smoothing behaves the same whether the terminal is keeping up or not.
     pub fn feed(&mut self, samples: &[f32], sample_rate: f32, dt: f32) {

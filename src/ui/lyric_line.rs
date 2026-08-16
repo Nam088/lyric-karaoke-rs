@@ -208,6 +208,38 @@ pub fn render(
             .collect()
     };
 
+    let countdown: Option<AnyElement<'static>> = if is_active
+        && !sentence.is_gap
+        && now < sentence.start()
+        && sentence.start() - now <= 2400
+    {
+        let until = sentence.start() - now;
+        let dots = if until > 1600 {
+            "● ○ ○  "
+        } else if until > 800 {
+            "● ● ○  "
+        } else {
+            "● ● ●  "
+        };
+        Some(
+            element! {
+                Text(color: config::LYRIC_HIT_PEAK, weight: Weight::Bold, content: dots)
+            }
+            .into(),
+        )
+    } else {
+        None
+    };
+
+    let words_with_lead: Vec<AnyElement<'static>> = if let Some(cd) = countdown {
+        let mut v = Vec::with_capacity(words.len() + 1);
+        v.push(cd);
+        v.extend(words);
+        v
+    } else {
+        words
+    };
+
     // Both markers are the same glyph, so whatever width the terminal gives it
     // they stay balanced around the words. The reserved column stays put even
     // when nothing is drawn in it, so lines do not shift as the marker moves.
@@ -233,7 +265,7 @@ pub fn render(
             View(width: 5, justify_content: JustifyContent::Center) {
                 #(indicator())
             }
-            View(flex_direction: FlexDirection::Row) { #(words) }
+            View(flex_direction: FlexDirection::Row) { #(words_with_lead) }
             View(width: 5, justify_content: JustifyContent::Center) {
                 #(indicator())
             }
