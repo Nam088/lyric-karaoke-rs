@@ -259,25 +259,25 @@ impl Theme {
             },
             ThemePreset::Light => Self {
                 name: "light",
-                border: rgb(0x1E, 0x40, 0xAF),        // Dark royal blue
-                header: rgb(0x1D, 0x4E, 0xD8),        // Cobalt blue
-                live: rgb(0x15, 0x80, 0x3D),          // Forest green
-                paused: rgb(0xB4, 0x53, 0x09),        // Dark amber
-                elapsed: rgb(0x1D, 0x4E, 0xD8),       // Cobalt blue
-                remaining: rgb(0x47, 0x55, 0x69),     // Dark slate gray (high contrast against white)
-                ticker: rgb(0x0F, 0x17, 0x2A),        // Pitch charcoal / black
-                keybinds_dim: rgb(0x47, 0x55, 0x69),  // Dark slate
-                highlight: rgb(0x00, 0x00, 0x00),     // Solid pitch black
-                lyric_past: rgb(0x47, 0x55, 0x69),    // Medium-dark slate
-                lyric_future: rgb(0x64, 0x74, 0x8B),  // Legible slate gray
-                lyric_singing: rgb(0x0F, 0x17, 0x2A), // Dark charcoal (high contrast)
-                lyric_hit: rgb(0x25, 0x63, 0xEB),     // Vibrant blue
-                lyric_hit_peak: rgb(0x1E, 0x1B, 0x4B),// Deep midnight indigo (no white!)
-                spectrum_edge: rgb(0x1D, 0x4E, 0xD8), // Cobalt blue
-                spectrum_fill: rgb(0x3B, 0x82, 0xF6), // Solid bright blue
-                spectrum_peak: rgb(0x0F, 0x17, 0x2A), // Midnight black (no white!)
-                note_label: rgb(0x1D, 0x4E, 0xD8),    // Cobalt blue
-                dark_base: (0x47, 0x55, 0x69),        // Slate base (never fades to white)
+                border: rgb(0x4F, 0x46, 0xE5),        // Royal Indigo
+                header: rgb(0x43, 0x38, 0xCA),        // Deep Indigo
+                live: rgb(0x05, 0x96, 0x69),          // Vivid Emerald
+                paused: rgb(0xD9, 0x77, 0x06),        // Warm Amber
+                elapsed: rgb(0x4F, 0x46, 0xE5),       // Royal Indigo
+                remaining: rgb(0x94, 0xA3, 0xB8),     // Cool Slate
+                ticker: rgb(0x1E, 0x1B, 0x4B),        // Deep Midnight Navy
+                keybinds_dim: rgb(0x64, 0x74, 0x8B),  // Slate Blue
+                highlight: rgb(0x31, 0x2E, 0x81),     // Deep Ink Indigo
+                lyric_past: rgb(0x33, 0x41, 0x55),    // Dark Slate Navy
+                lyric_future: rgb(0x64, 0x74, 0x8B),  // Cool Slate Blue
+                lyric_singing: rgb(0x0F, 0x17, 0x2A), // Crisp Midnight Charcoal
+                lyric_hit: rgb(0x4F, 0x46, 0xE5),     // Vibrant Royal Indigo
+                lyric_hit_peak: rgb(0x31, 0x2E, 0x81),// Deep Ink Indigo
+                spectrum_edge: rgb(0x43, 0x38, 0xCA), // Deep Indigo
+                spectrum_fill: rgb(0x81, 0x8C, 0xF8), // Soft Electric Indigo
+                spectrum_peak: rgb(0x1E, 0x1B, 0x4B), // Deep Midnight Navy
+                note_label: rgb(0x4F, 0x46, 0xE5),    // Royal Indigo
+                dark_base: (0x33, 0x41, 0x55),        // Fades into Slate Navy mist
             },
         }
     }
