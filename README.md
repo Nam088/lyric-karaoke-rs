@@ -99,6 +99,7 @@ pub const LINE_SPACING: usize = 0;     // 0 = các dòng lyric liền kề, 1 = 
 | `Q` / `Esc` | Thoát chương trình |
 
 ### Bằng chuột (Mouse click support):
+* **Click vào bất kỳ dòng Lyric nào**: Nhảy (Seek) ngay lập tức đến đoạn hát của dòng đó.
 * **Click vào thanh Timeline**: Seek trực tiếp và chính xác đến từng giây bạn bấm.
 * **Click vào `● LIVE` / `⏸ PAUSED`**: Toggle Play / Pause.
 * **Click các nút Transport `|◄`, `▌▌ / ►`, `►|`**: Lùi dòng / Play-Pause / Tới dòng kế tiếp.

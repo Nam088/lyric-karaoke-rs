@@ -139,7 +139,7 @@ pub fn App(props: &AppProps, mut hooks: Hooks) -> impl Into<AnyElement<'static>>
         a.note
     };
 
-    let lines = visible_lines(&session, now, render_past.get(), &layout);
+    let lines = visible_lines(session.clone(), now, render_past.get(), &layout);
 
     let spectrum = {
         let a = analyzer.lock().unwrap();
@@ -234,7 +234,7 @@ fn rule(layout: &Layout) -> Option<AnyElement<'static>> {
 
 /// The window of lyric lines centred on the active one.
 fn visible_lines(
-    session: &Session,
+    session: Arc<Session>,
     now: i64,
     render_past: bool,
     layout: &Layout,
@@ -300,6 +300,7 @@ fn visible_lines(
                 (idx as f32 - active_float).abs(),
                 gap_is_active,
                 spacing,
+                Some(session.clone()),
             )
         })
         .collect()

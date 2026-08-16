@@ -6,9 +6,12 @@
 //! decomposed Vietnamese it counted three units for one visible character and
 //! the highlight ran ahead of the voice.
 
+use std::sync::Arc;
+
 use iocraft::prelude::*;
 use unicode_segmentation::UnicodeSegmentation;
 
+use super::Session;
 use crate::color;
 use crate::config;
 use crate::lyrics::Sentence;
@@ -165,6 +168,7 @@ pub fn render(
     distance: f32,
     gap_is_active: bool,
     margin_bottom: u32,
+    session: Option<Arc<Session>>,
 ) -> AnyElement<'static> {
     let is_active = status == Status::Active;
 
@@ -258,7 +262,7 @@ pub fn render(
         }
     };
 
-    element! {
+    let line_element = element! {
         View(
             flex_direction: FlexDirection::Row,
             justify_content: JustifyContent::Center,
@@ -272,8 +276,19 @@ pub fn render(
                 #(indicator())
             }
         }
+    };
+
+    if let Some(s) = session {
+        let start_ms = sentence.start();
+        element! {
+            Button(handler: move |_| s.audio.seek_ms(start_ms)) {
+                #(line_element)
+            }
+        }
+        .into()
+    } else {
+        line_element.into()
     }
-    .into()
 }
 
 #[cfg(test)]
@@ -301,7 +316,7 @@ mod tests {
 
     /// Plain text of a rendered line, escape codes stripped.
     fn drawn(sentence: &Sentence, status: Status, gap_is_active: bool) -> String {
-        let mut e = render(sentence, 1_500, status, 0.0, gap_is_active, 0);
+        let mut e = render(sentence, 1_500, status, 0.0, gap_is_active, 0, None);
         let mut buf = Vec::new();
         e.render(Some(60)).write(&mut buf).unwrap();
         String::from_utf8_lossy(&buf).replace('\n', "")
