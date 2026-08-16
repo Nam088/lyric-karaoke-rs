@@ -38,6 +38,9 @@ pub const LYRIC_PAST: Color = rgb(0x16, 0xA3, 0x4A);
 pub const LYRIC_FUTURE: Color = rgb(0x4B, 0x55, 0x63);
 pub const LYRIC_SINGING: Color = rgb(0xF0, 0xFD, 0xF4);
 pub const LYRIC_HIT: Color = rgb(0x4A, 0xDE, 0x80);
+pub const LYRIC_HIT_PEAK: Color = rgb(0xFF, 0xFF, 0xFF);
+pub const AFTERGLOW_DURATION_MS: i64 = 240;
+pub const ANTICIPATION_MS: i64 = 150;
 
 // Spectrum.
 pub const SPECTRUM_EDGE: Color = rgb(0xBB, 0xF7, 0xD0); // the bright crest line
@@ -60,7 +63,7 @@ pub const TICK_INTERVAL_MS: u64 = 30;
 
 pub const LIVE_BLINK_MS: f64 = 500.0;
 pub const GAP_PATTERN_MS: f64 = 800.0;
-pub const DANCING_INDICATOR_MS: f64 = 600.0;
+pub const DANCING_INDICATOR_MS: f64 = 450.0;
 pub const TICKER_SCROLL_MS: f64 = 350.0;
 pub const SCROLL_TRANSITION_MS: f64 = 500.0;
 
@@ -76,7 +79,7 @@ pub const SEEK_STEP_MS: i64 = 5000;
 
 // ── Symbols ────────────────────────────────────────────────────────────
 
-pub const MUSIC_NOTES: [&str; 1] = [" ♪ "];
+pub const MUSIC_NOTES: [&str; 4] = [" ♪ ", " ♫ ", " ♬ ", " ♩ "];
 pub const SEPARATOR_HORIZONTAL: &str = "─";
 pub const VBAR: &str = " │ ";
 

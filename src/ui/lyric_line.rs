@@ -21,6 +21,7 @@ pub enum Status {
 }
 
 /// How far through a word the voice is, as a grapheme count.
+#[cfg(test)]
 fn filled_graphemes(text: &str, now: i64, start: i64, end: i64) -> usize {
     let total = text.graphemes(true).count();
     let duration = end - start;
@@ -31,6 +32,7 @@ fn filled_graphemes(text: &str, now: i64, start: i64, end: i64) -> usize {
     ((progress * total as f32).ceil() as usize).min(total)
 }
 
+#[cfg(test)]
 fn take_graphemes(text: &str, range: std::ops::Range<usize>) -> String {
     text.graphemes(true)
         .skip(range.start)
@@ -52,20 +54,58 @@ fn span(text: String, color: Color, bold: bool) -> AnyElement<'static> {
 /// A run of text on the active line, with the colour it is drawn in.
 type Span = (String, Color);
 
-/// The word currently being sung, split into what has landed, the character
-/// on the beat, and what is still ahead.
+/// The word currently being sung or transitioning, split into graphemes with
+/// smooth afterglow decay, highlight peak, and anticipation.
 fn singing_word(text: &str, now: i64, start: i64, end: i64) -> Vec<Span> {
-    let filled = filled_graphemes(text, now, start, end);
-    let total = text.graphemes(true).count();
+    let graphemes: Vec<&str> = text.graphemes(true).collect();
+    let total = graphemes.len();
+    if total == 0 {
+        return Vec::new();
+    }
 
-    [
-        (take_graphemes(text, 0..filled.saturating_sub(1)), config::LYRIC_PAST),
-        (take_graphemes(text, filled.saturating_sub(1)..filled), config::LYRIC_HIT),
-        (take_graphemes(text, filled..total), config::LYRIC_SINGING),
-    ]
-    .into_iter()
-    .filter(|(t, _)| !t.is_empty())
-    .collect()
+    let duration = (end - start).max(0);
+    if duration == 0 {
+        return vec![(text.to_string(), config::LYRIC_PAST)];
+    }
+
+    let mut spans: Vec<Span> = Vec::with_capacity(total);
+
+    for (k, &g) in graphemes.iter().enumerate() {
+        let g_start = start + (k as i64 * duration) / total as i64;
+        let g_end = start + ((k + 1) as i64 * duration) / total as i64;
+        let g_dur = (g_end - g_start).max(1);
+
+        let color = if now < g_start {
+            let until = g_start - now;
+            if until <= config::ANTICIPATION_MS && config::ANTICIPATION_MS > 0 {
+                let warm = 1.0 - (until as f32 / config::ANTICIPATION_MS as f32);
+                color::mix(config::LYRIC_SINGING, config::LYRIC_HIT, warm * 0.45)
+            } else {
+                config::LYRIC_SINGING
+            }
+        } else if now < g_end {
+            let p = (now - g_start) as f32 / g_dur as f32;
+            color::mix(config::LYRIC_HIT_PEAK, config::LYRIC_HIT, p)
+        } else {
+            let since = now - g_end;
+            if since <= config::AFTERGLOW_DURATION_MS && config::AFTERGLOW_DURATION_MS > 0 {
+                let decay = since as f32 / config::AFTERGLOW_DURATION_MS as f32;
+                color::mix(config::LYRIC_HIT, config::LYRIC_PAST, decay)
+            } else {
+                config::LYRIC_PAST
+            }
+        };
+
+        if let Some((prev_text, prev_color)) = spans.last_mut() {
+            if *prev_color == color {
+                prev_text.push_str(g);
+                continue;
+            }
+        }
+        spans.push((g.to_string(), color));
+    }
+
+    spans
 }
 
 /// The active line, word by word, with a separator *between* words rather
@@ -79,15 +119,29 @@ fn active_spans(sentence: &Sentence, now: i64) -> Vec<Span> {
 
     for (i, w) in sentence.words.iter().enumerate() {
         if i > 0 {
-            out.push((" ".to_string(), config::LYRIC_SINGING));
+            let prev_end = sentence.words[i - 1].end_time;
+            let space_color = if now >= w.start_time {
+                config::LYRIC_PAST
+            } else if now >= prev_end {
+                let since = now - prev_end;
+                if since <= config::AFTERGLOW_DURATION_MS && config::AFTERGLOW_DURATION_MS > 0 {
+                    let decay = since as f32 / config::AFTERGLOW_DURATION_MS as f32;
+                    color::mix(config::LYRIC_HIT, config::LYRIC_PAST, decay)
+                } else {
+                    config::LYRIC_PAST
+                }
+            } else {
+                config::LYRIC_SINGING
+            };
+            out.push((" ".to_string(), space_color));
         }
 
-        if now >= w.end_time {
+        if now >= w.end_time + config::AFTERGLOW_DURATION_MS {
             out.push((w.data.clone(), config::LYRIC_PAST));
-        } else if now >= w.start_time {
-            out.extend(singing_word(&w.data, now, w.start_time, w.end_time));
-        } else {
+        } else if now + config::ANTICIPATION_MS < w.start_time {
             out.push((w.data.clone(), config::LYRIC_SINGING));
+        } else {
+            out.extend(singing_word(&w.data, now, w.start_time, w.end_time));
         }
     }
 
@@ -137,7 +191,13 @@ pub fn render(
         let base = if status == Status::Past {
             config::LYRIC_PAST
         } else {
-            config::LYRIC_FUTURE
+            if distance < 1.0 {
+                // Approaching upcoming line: warm up from FUTURE to SINGING
+                let approach = (1.0 - distance).clamp(0.0, 1.0);
+                color::mix(config::LYRIC_FUTURE, config::LYRIC_SINGING, approach * 0.75)
+            } else {
+                config::LYRIC_FUTURE
+            }
         };
         let c = color::fade(base, fade, config::DARK_BASE);
         vec![span(sentence.text(), c, false)]
@@ -153,8 +213,10 @@ pub fn render(
     // when nothing is drawn in it, so lines do not shift as the marker moves.
     let indicator = || -> Vec<AnyElement<'static>> {
         if show_indicator {
+            let pulse = ((now as f64 / 350.0).sin() * 0.5 + 0.5) as f32;
+            let ind_color = color::mix(config::LYRIC_HIT, config::LYRIC_HIT_PEAK, pulse * 0.5);
             vec![element! {
-                Text(color: config::LYRIC_HIT, weight: Weight::Bold, content: symbol)
+                Text(color: ind_color, weight: Weight::Bold, content: symbol)
             }
             .into()]
         } else {
@@ -294,5 +356,31 @@ mod tests {
         #[allow(clippy::reversed_empty_ranges)]
         let backwards = take_graphemes(s, 5..2);
         assert_eq!(backwards, "");
+    }
+
+    #[test]
+    fn singing_word_transitions_smoothly_through_states() {
+        let word = "hát";
+        // Before anticipation: pure singing color
+        let before = singing_word(word, 0, 1000, 2000);
+        assert_eq!(joined(&before), word);
+        assert_eq!(before[0].1, config::LYRIC_SINGING);
+
+        // During anticipation: warm up
+        let warm = singing_word(word, 900, 1000, 2000);
+        assert_eq!(joined(&warm), word);
+
+        // Mid singing: active character is lit
+        let mid = singing_word(word, 1500, 1000, 2000);
+        assert_eq!(joined(&mid), word);
+
+        // Just finished: afterglow is active (not yet fully LYRIC_PAST)
+        let just_finished = singing_word(word, 2050, 1000, 2000);
+        assert_eq!(joined(&just_finished), word);
+
+        // Long after: fully LYRIC_PAST
+        let long_past = singing_word(word, 5000, 1000, 2000);
+        assert_eq!(joined(&long_past), word);
+        assert_eq!(long_past[0].1, config::LYRIC_PAST);
     }
 }
