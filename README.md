@@ -78,7 +78,7 @@ pub const SONG_FILE: &str = "a.mp3";
 pub const LYRIC_JSON: &str = "data/lr.json";
 
 // Giao diện
-pub const DEFAULT_THEME: ThemePreset = ThemePreset::Emerald; // Emerald | Cyberpunk | Ocean | Sunset | Sakura | Mono
+pub const DEFAULT_THEME: ThemePreset = ThemePreset::Emerald; // Emerald | Cyberpunk | Ocean | Sunset | Sakura | Mono | Light
 pub const SHOW_SPECTRUM: bool = false; // Bật/tắt spectrum khi khởi động
 pub const SHOW_NOTE: bool = false;     // Bật/tắt hiển thị nốt nhạc phát hiện
 pub const SHOW_KEYBINDS: bool = false; // Bật/tắt thanh hướng dẫn phím
@@ -94,7 +94,7 @@ pub const LINE_SPACING: usize = 0;     // 0 = các dòng lyric liền kề, 1 = 
 | --- | --- |
 | `Space` | Play / Pause bài hát |
 | `←` / `→` | Tua lùi / Tua tới 5 giây (±5s) |
-| `C` | Đổi Bảng Màu Theme Preset (`Emerald` ➔ `Cyberpunk` ➔ `Ocean` ➔ `Sunset` ➔ `Sakura` ➔ `Mono`) |
+| `C` | Đổi Bảng Màu Theme Preset (`Emerald` ➔ `Cyberpunk` ➔ `Ocean` ➔ `Sunset` ➔ `Sakura` ➔ `Mono` ➔ `Light`) |
 | `S` | Đổi kiểu Visualizer Spectrum (`Curve` ➔ `Mirror` ➔ `Line` ➔ `Bars` ➔ `Off`) |
 | `N` | Bật / Tắt hiển thị Nốt nhạc (Pitch Detection & Cents offset) |
 | `H` | Bật / Tắt thanh hướng dẫn phím tắt ở header |
@@ -110,7 +110,7 @@ pub const LINE_SPACING: usize = 0;     // 0 = các dòng lyric liền kề, 1 = 
 
 ## ✨ Tính Năng Nổi Bật (Features)
 
-* **6 Color Theme Presets**: Chuyển đổi linh hoạt giữa các phong cách màu sắc (`Emerald`, `Cyberpunk`, `Ocean`, `Sunset`, `Sakura`, `Mono`) chỉ với 1 phím bấm `C`.
+* **7 Color Theme Presets**: Chuyển đổi linh hoạt giữa các phong cách màu sắc (`Emerald`, `Cyberpunk`, `Ocean`, `Sunset`, `Sakura`, `Mono`, `Light` dành cho terminal nền trắng) chỉ với 1 phím bấm `C`.
 * **Zero-delay Clock-derived Animation**:
   * **Breathing Glow**: Dòng đang hát phát sáng nhịp nhàng.
   * **Wave Ripple**: Hiệu ứng sóng nhẹ lướt qua các từ chuẩn bị hát.
