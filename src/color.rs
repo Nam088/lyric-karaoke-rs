@@ -259,25 +259,25 @@ impl Theme {
             },
             ThemePreset::Light => Self {
                 name: "light",
-                border: rgb(0x25, 0x63, 0xEB),
-                header: rgb(0x1D, 0x4E, 0xD8),
-                live: rgb(0x16, 0xA3, 0x4A),
-                paused: rgb(0xD9, 0x77, 0x06),
-                elapsed: rgb(0x25, 0x63, 0xEB),
-                remaining: rgb(0xCB, 0xD5, 0xE1),
-                ticker: rgb(0x1E, 0x29, 0x3B),
-                keybinds_dim: rgb(0x94, 0xA3, 0xB8),
-                highlight: rgb(0x0F, 0x17, 0x2A),
-                lyric_past: rgb(0x64, 0x74, 0x8B),
-                lyric_future: rgb(0x94, 0xA3, 0xB8),
-                lyric_singing: rgb(0x0F, 0x17, 0x2A),
-                lyric_hit: rgb(0x25, 0x63, 0xEB),
-                lyric_hit_peak: rgb(0x1E, 0x1B, 0x4B),
-                spectrum_edge: rgb(0x1D, 0x4E, 0xD8),
-                spectrum_fill: rgb(0x93, 0xC5, 0xFD),
-                spectrum_peak: rgb(0x1E, 0x1B, 0x4B),
-                note_label: rgb(0x1D, 0x4E, 0xD8),
-                dark_base: (0xF1, 0xF5, 0xF9),
+                border: rgb(0x1E, 0x40, 0xAF),        // Dark royal blue
+                header: rgb(0x1D, 0x4E, 0xD8),        // Cobalt blue
+                live: rgb(0x15, 0x80, 0x3D),          // Forest green
+                paused: rgb(0xB4, 0x53, 0x09),        // Dark amber
+                elapsed: rgb(0x1D, 0x4E, 0xD8),       // Cobalt blue
+                remaining: rgb(0x47, 0x55, 0x69),     // Dark slate gray (high contrast against white)
+                ticker: rgb(0x0F, 0x17, 0x2A),        // Pitch charcoal / black
+                keybinds_dim: rgb(0x47, 0x55, 0x69),  // Dark slate
+                highlight: rgb(0x00, 0x00, 0x00),     // Solid pitch black
+                lyric_past: rgb(0x47, 0x55, 0x69),    // Medium-dark slate
+                lyric_future: rgb(0x64, 0x74, 0x8B),  // Legible slate gray
+                lyric_singing: rgb(0x0F, 0x17, 0x2A), // Dark charcoal (high contrast)
+                lyric_hit: rgb(0x25, 0x63, 0xEB),     // Vibrant blue
+                lyric_hit_peak: rgb(0x1E, 0x1B, 0x4B),// Deep midnight indigo (no white!)
+                spectrum_edge: rgb(0x1D, 0x4E, 0xD8), // Cobalt blue
+                spectrum_fill: rgb(0x3B, 0x82, 0xF6), // Solid bright blue
+                spectrum_peak: rgb(0x0F, 0x17, 0x2A), // Midnight black (no white!)
+                note_label: rgb(0x1D, 0x4E, 0xD8),    // Cobalt blue
+                dark_base: (0x47, 0x55, 0x69),        // Slate base (never fades to white)
             },
         }
     }
@@ -333,5 +333,36 @@ mod tests {
             assert_eq!(theme.name, preset.name());
             assert!(!preset.name().is_empty());
         }
+    }
+
+    #[test]
+    fn light_theme_has_no_white_or_near_white_colors() {
+        let light = ThemePreset::Light.theme();
+        let is_too_light = |c: Color| {
+            let (r, g, b) = parts(c);
+            r > 190 && g > 190 && b > 190
+        };
+        assert!(!is_too_light(light.border), "border is too light");
+        assert!(!is_too_light(light.header), "header is too light");
+        assert!(!is_too_light(light.live), "live is too light");
+        assert!(!is_too_light(light.paused), "paused is too light");
+        assert!(!is_too_light(light.elapsed), "elapsed is too light");
+        assert!(!is_too_light(light.remaining), "remaining is too light");
+        assert!(!is_too_light(light.ticker), "ticker is too light");
+        assert!(!is_too_light(light.keybinds_dim), "keybinds_dim is too light");
+        assert!(!is_too_light(light.highlight), "highlight is too light");
+        assert!(!is_too_light(light.lyric_past), "lyric_past is too light");
+        assert!(!is_too_light(light.lyric_future), "lyric_future is too light");
+        assert!(!is_too_light(light.lyric_singing), "lyric_singing is too light");
+        assert!(!is_too_light(light.lyric_hit), "lyric_hit is too light");
+        assert!(!is_too_light(light.lyric_hit_peak), "lyric_hit_peak is too light");
+        assert!(!is_too_light(light.spectrum_edge), "spectrum_edge is too light");
+        assert!(!is_too_light(light.spectrum_fill), "spectrum_fill is too light");
+        assert!(!is_too_light(light.spectrum_peak), "spectrum_peak is too light");
+        assert!(!is_too_light(light.note_label), "note_label is too light");
+        assert!(
+            light.dark_base.0 <= 100 && light.dark_base.1 <= 100 && light.dark_base.2 <= 120,
+            "dark_base must not be white"
+        );
     }
 }
