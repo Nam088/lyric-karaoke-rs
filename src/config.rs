@@ -1,0 +1,137 @@
+//! Everything tunable lives here, ported from the TypeScript `constants.ts`.
+//!
+//! The original file mixed live settings with a few values nothing read any
+//! more (`PATHS.AUDIO_FILE`, which `app.tsx` bypassed entirely). Those are
+//! gone. What remains is only what the app actually uses.
+
+use iocraft::prelude::Color;
+
+// ── Strings ────────────────────────────────────────────────────────────
+
+pub const APP_NAME: &str = "Karaoke";
+pub const LIVE_LABEL: &str = "● LIVE";
+pub const PAUSED_LABEL: &str = "⏸ PAUSED";
+pub const SONG_NAME: &str = "Tìm Em - Hngle, Bảo Anh";
+pub const SONG_FILE: &str = "a.mp3";
+pub const GAP_TEXT: &str = "♫  ♪  ♫  ♪  ♫  ♪  ♫";
+pub const GAP_ALT_TEXT: &str = "♪  ♫  ♪  ♫  ♪  ♫  ♪";
+
+// ── Colours ────────────────────────────────────────────────────────────
+
+pub const fn rgb(r: u8, g: u8, b: u8) -> Color {
+    Color::Rgb { r, g, b }
+}
+
+// UI, monochrome green theme.
+pub const PRIMARY_BORDER: Color = rgb(0x22, 0xC5, 0x5E);
+pub const HEADER_KARAOKE: Color = rgb(0x4A, 0xDE, 0x80);
+pub const LIVE_INDICATOR: Color = rgb(0x22, 0xC5, 0x5E);
+pub const PAUSED_INDICATOR: Color = rgb(0xEA, 0xB3, 0x08);
+pub const TIMELINE_ELAPSED: Color = rgb(0x22, 0xC5, 0x5E);
+pub const TIMELINE_REMAINING: Color = rgb(0x37, 0x41, 0x51);
+pub const TICKER_TEXT: Color = rgb(0x86, 0xEF, 0xAC);
+pub const KEYBINDS_DIM: Color = rgb(0x4B, 0x55, 0x63);
+pub const KEYBINDS_HIGHLIGHT: Color = rgb(0x86, 0xEF, 0xAC);
+
+// Lyrics.
+pub const LYRIC_PAST: Color = rgb(0x16, 0xA3, 0x4A);
+pub const LYRIC_FUTURE: Color = rgb(0x4B, 0x55, 0x63);
+pub const LYRIC_SINGING: Color = rgb(0xF0, 0xFD, 0xF4);
+pub const LYRIC_HIT: Color = rgb(0x4A, 0xDE, 0x80);
+
+// Spectrum.
+pub const SPECTRUM_EDGE: Color = rgb(0xBB, 0xF7, 0xD0); // the bright crest line
+pub const SPECTRUM_FILL: Color = rgb(0x15, 0x80, 0x3D); // dithered body under it
+pub const SPECTRUM_PEAK: Color = rgb(0xF0, 0xFD, 0xF4); // hold markers
+pub const WAVEFORM_PLAYED: Color = rgb(0x22, 0xC5, 0x5E);
+pub const WAVEFORM_AHEAD: Color = rgb(0x37, 0x41, 0x51);
+pub const NOTE_LABEL: Color = rgb(0x86, 0xEF, 0xAC);
+
+/// Dimming base for the distance fade.
+pub const DARK_BASE: (u8, u8, u8) = (0x03, 0x07, 0x12);
+
+// ── Timings, all milliseconds ──────────────────────────────────────────
+
+/// Where playback starts. Format is `H:MM:SS` or `MM:SS`.
+pub const START_TIME: &str = "0:00:00";
+
+/// One frame of the render loop. Also the character fill resolution.
+pub const TICK_INTERVAL_MS: u64 = 30;
+
+pub const LIVE_BLINK_MS: f64 = 500.0;
+pub const GAP_PATTERN_MS: f64 = 800.0;
+pub const DANCING_INDICATOR_MS: f64 = 600.0;
+pub const TICKER_SCROLL_MS: f64 = 350.0;
+pub const SCROLL_TRANSITION_MS: f64 = 500.0;
+
+pub const GAP_INITIAL_THRESHOLD_MS: i64 = 3000;
+pub const GAP_INTER_THRESHOLD_MS: i64 = 2000;
+pub const GAP_BUFFER_MS: i64 = 500;
+pub const SEEK_STEP_MS: i64 = 5000;
+
+// The TypeScript build also had SEEK_DEBOUNCE_MS. It existed only because
+// seeking meant killing an ffmpeg process and spawning a new one, which was
+// far too expensive to do on every arrow key. `Player::try_seek` is
+// immediate, so there is nothing left to debounce.
+
+// ── Symbols ────────────────────────────────────────────────────────────
+
+pub const MUSIC_NOTES: [&str; 1] = [" ♪ "];
+pub const SEPARATOR_HORIZONTAL: &str = "─";
+pub const VBAR: &str = " │ ";
+
+// Progress bar.
+pub const TIMELINE_FILLED: char = '━';
+pub const TIMELINE_EMPTY: char = '─';
+pub const TIMELINE_MARKER: char = '●';
+pub const TIMELINE_CAP_LEFT: &str = " ╶";
+pub const TIMELINE_CAP_RIGHT: &str = "╴ ";
+pub const TIMELINE_BLINK_MS: f64 = 600.0;
+
+/// Draw the song's loudness over time instead of a plain bar.
+///
+/// Off by default. It carries more information, but at two rows of braille it
+/// reads as texture rather than as a position you can judge at a glance, which
+/// is what a progress bar is for.
+pub const WAVEFORM_TIMELINE: bool = false;
+
+// ── Layout ─────────────────────────────────────────────────────────────
+
+/// How many lyric lines are on screen at once. Must be odd so one sits dead
+/// centre.
+pub const WINDOW_SIZE: usize = 7;
+pub const MAX_BOX_WIDTH: usize = 120;
+
+/// Columns left empty either side of the panel.
+///
+/// Insurance against glyphs the terminal draws wider than the layout measured
+/// them. Musical notes, `●`, `◄`, `►` and `▌` are all East Asian Ambiguous:
+/// the width tables call them one column, and a terminal configured for CJK
+/// draws them as two. Filling right up to the edge means one such glyph wraps
+/// the line, which shifts every row below it and makes the next repaint land
+/// on the wrong rows.
+pub const SAFE_MARGIN: usize = 4;
+pub const TICKER_WIDTH_RATIO: f32 = 0.8;
+pub const TIMELINE_WIDTH_RATIO: f32 = 0.7;
+pub const SHOW_KEYBINDS: bool = false;
+pub const RENDER_PAST_ON_START: bool = false;
+
+/// Whether the detected note is in the header at startup. Off by default,
+/// like the spectrum: useful when you want it, clutter when you do not.
+/// Toggled with `N`.
+pub const SHOW_NOTE: bool = false;
+
+/// Which end of the `S` cycle the app starts on.
+///
+/// Off by default: the spectrum is decoration, the lyrics are the point, and
+/// the rows it would occupy go back to them. Press `S` to bring it up.
+pub const SHOW_SPECTRUM: bool = false;
+
+/// Terminal rows given to the spectrum. Each row is 4 braille pixels tall.
+/// The layout gives some of these up before it drops a lyric line.
+pub const SPECTRUM_ROWS: usize = 4;
+
+// ── Paths ──────────────────────────────────────────────────────────────
+
+pub const LYRIC_JSON: &str = "data/lr2.json";
+pub const DATA_DIR: &str = "data";
