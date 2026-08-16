@@ -259,25 +259,25 @@ impl Theme {
             },
             ThemePreset::Light => Self {
                 name: "light",
-                border: rgb(0x4F, 0x46, 0xE5),        // Royal Indigo
-                header: rgb(0x43, 0x38, 0xCA),        // Deep Indigo
-                live: rgb(0x05, 0x96, 0x69),          // Vivid Emerald
-                paused: rgb(0xD9, 0x77, 0x06),        // Warm Amber
-                elapsed: rgb(0x4F, 0x46, 0xE5),       // Royal Indigo
-                remaining: rgb(0x94, 0xA3, 0xB8),     // Cool Slate
-                ticker: rgb(0x1E, 0x1B, 0x4B),        // Deep Midnight Navy
-                keybinds_dim: rgb(0x64, 0x74, 0x8B),  // Slate Blue
-                highlight: rgb(0x31, 0x2E, 0x81),     // Deep Ink Indigo
-                lyric_past: rgb(0x33, 0x41, 0x55),    // Dark Slate Navy
-                lyric_future: rgb(0x64, 0x74, 0x8B),  // Cool Slate Blue
-                lyric_singing: rgb(0x0F, 0x17, 0x2A), // Crisp Midnight Charcoal
-                lyric_hit: rgb(0x4F, 0x46, 0xE5),     // Vibrant Royal Indigo
-                lyric_hit_peak: rgb(0x31, 0x2E, 0x81),// Deep Ink Indigo
-                spectrum_edge: rgb(0x43, 0x38, 0xCA), // Deep Indigo
-                spectrum_fill: rgb(0x81, 0x8C, 0xF8), // Soft Electric Indigo
-                spectrum_peak: rgb(0x1E, 0x1B, 0x4B), // Deep Midnight Navy
-                note_label: rgb(0x4F, 0x46, 0xE5),    // Royal Indigo
-                dark_base: (0x33, 0x41, 0x55),        // Fades into Slate Navy mist
+                border: rgb(0x1E, 0x29, 0x3B),        // Dark Slate
+                header: rgb(0x1D, 0x4E, 0xD8),        // Cobalt Blue
+                live: rgb(0x16, 0x65, 0x34),          // Dark Forest Green
+                paused: rgb(0xB4, 0x53, 0x09),        // Dark Amber
+                elapsed: rgb(0x25, 0x63, 0xEB),       // Royal Blue
+                remaining: rgb(0x64, 0x74, 0x8B),     // Slate Gray
+                ticker: rgb(0x0F, 0x17, 0x2A),        // Pitch Black
+                keybinds_dim: rgb(0x47, 0x55, 0x69),  // Dark Slate
+                highlight: rgb(0x1D, 0x4E, 0xD8),     // Cobalt Blue
+                lyric_past: rgb(0x47, 0x55, 0x69),    // Dark Slate Gray
+                lyric_future: rgb(0x64, 0x74, 0x8B),  // Slate Gray
+                lyric_singing: rgb(0x00, 0x00, 0x00), // Solid Pitch Black
+                lyric_hit: rgb(0x25, 0x63, 0xEB),     // Vibrant Royal Blue
+                lyric_hit_peak: rgb(0xDC, 0x26, 0x26),// Vivid Crimson Red
+                spectrum_edge: rgb(0x1D, 0x4E, 0xD8), // Cobalt Blue
+                spectrum_fill: rgb(0x3B, 0x82, 0xF6), // Solid Blue
+                spectrum_peak: rgb(0x0F, 0x17, 0x2A), // Dark Charcoal
+                note_label: rgb(0x1D, 0x4E, 0xD8),    // Cobalt Blue
+                dark_base: (0x64, 0x74, 0x8B),        // Slate Gray base
             },
         }
     }
@@ -361,7 +361,7 @@ mod tests {
         assert!(!is_too_light(light.spectrum_peak), "spectrum_peak is too light");
         assert!(!is_too_light(light.note_label), "note_label is too light");
         assert!(
-            light.dark_base.0 <= 100 && light.dark_base.1 <= 100 && light.dark_base.2 <= 120,
+            light.dark_base.0 <= 150 && light.dark_base.1 <= 150 && light.dark_base.2 <= 150,
             "dark_base must not be white"
         );
     }

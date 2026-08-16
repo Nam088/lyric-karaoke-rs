@@ -17,7 +17,7 @@ pub const GAP_ALT_TEXT: &str = "♪  ♫  ♪  ♫  ♪  ♫  ♪";
 // ── Colours & Themes ───────────────────────────────────────────────────
 
 /// Default color theme on startup. Cycled live with the `C` key.
-pub const DEFAULT_THEME: crate::color::ThemePreset = crate::color::ThemePreset::Emerald;
+pub const DEFAULT_THEME: crate::color::ThemePreset = crate::color::ThemePreset::Light;
 
 // Lyric animation timings
 pub const AFTERGLOW_DURATION_MS: i64 = 240;
