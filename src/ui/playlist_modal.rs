@@ -1,4 +1,4 @@
-//! Interactive Playlist Modal Dialog.
+//! Interactive Playlist Modal Dialog without emojis.
 
 use std::sync::{Arc, Mutex};
 
@@ -35,7 +35,7 @@ where
             let is_selected = idx == cursor;
 
             let prefix = if is_current {
-                if is_playing { "▶ " } else { "⏸ " }
+                if is_playing { "▶ " } else { "■ " }
             } else if is_selected {
                 "→ "
             } else {
@@ -81,7 +81,7 @@ where
                             Text(color: theme.remaining, content: artist)
                         }
                         #(is_current.then(|| element! {
-                            Text(color: theme.live, weight: Weight::Bold, content: " ● LIVE ")
+                            Text(color: theme.live, weight: Weight::Bold, content: " [LIVE] ")
                         }))
                     }
                 }
@@ -112,14 +112,14 @@ where
                 Text(
                     color: theme.highlight,
                     weight: Weight::Bold,
-                    content: format!(" 📑 DANH SÁCH BÀI HÁT ({})", playlist.len()),
+                    content: format!(" DANH SÁCH BÀI HÁT ({})", playlist.len()),
                 )
                 Button(handler: move |_| {
                     if let Ok(mut f) = on_cls.lock() {
                         f();
                     }
                 }) {
-                    Text(color: theme.remaining, weight: Weight::Bold, content: "[✕ Đóng] ")
+                    Text(color: theme.remaining, weight: Weight::Bold, content: "[x] Đóng ")
                 }
             }
 
