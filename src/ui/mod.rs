@@ -292,38 +292,35 @@ pub fn App(props: &AppProps, mut hooks: Hooks) -> impl Into<AnyElement<'static>>
     let track_display = session.current_track.read().unwrap().display_name();
     let envelope = session.envelope.read().unwrap().clone();
 
-    let center_content = if show_playlist.get() {
-        let s = session.clone();
-        playlist_modal::render(
-            session.clone(),
-            playlist_cursor.get(),
-            layout.box_width.saturating_sub(10),
-            &theme,
-            move |idx| {
-                let _ = s.switch_track(idx);
-                playlist_cursor.set(idx);
-                show_playlist.set(false);
-            },
-            move || {
-                show_playlist.set(false);
-            },
-        )
-    } else {
+    let s_toggle = session.clone();
+    let s_select = session.clone();
+
+    let modal_overlay = show_playlist.get().then(|| {
         element! {
             View(
-                flex_direction: FlexDirection::Column,
+                position: Position::Absolute,
+                width: term_w,
+                height: term_h,
                 align_items: AlignItems::Center,
-                width: 100pct,
-                margin_top: layout.lyric_margin(),
-                margin_bottom: layout.lyric_margin(),
+                justify_content: JustifyContent::Center,
             ) {
-                #(lines)
+                #(playlist_modal::render(
+                    session.clone(),
+                    playlist_cursor.get(),
+                    layout.box_width.saturating_sub(10),
+                    &theme,
+                    move |idx| {
+                        let _ = s_select.switch_track(idx);
+                        playlist_cursor.set(idx);
+                        show_playlist.set(false);
+                    },
+                    move || {
+                        show_playlist.set(false);
+                    },
+                ))
             }
         }
-        .into()
-    };
-
-    let s_toggle = session.clone();
+    });
 
     element! {
         View(
@@ -356,7 +353,15 @@ pub fn App(props: &AppProps, mut hooks: Hooks) -> impl Into<AnyElement<'static>>
                 ))
                 #(rule(&layout, &theme))
 
-                #(center_content)
+                View(
+                    flex_direction: FlexDirection::Column,
+                    align_items: AlignItems::Center,
+                    width: 100pct,
+                    margin_top: layout.lyric_margin(),
+                    margin_bottom: layout.lyric_margin(),
+                ) {
+                    #(lines)
+                }
 
                 #(rule(&layout, &theme))
 
@@ -401,6 +406,8 @@ pub fn App(props: &AppProps, mut hooks: Hooks) -> impl Into<AnyElement<'static>>
                         )))
                 }
             }
+
+            #(modal_overlay)
         }
     }
 }

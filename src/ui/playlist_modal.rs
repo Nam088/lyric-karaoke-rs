@@ -91,11 +91,19 @@ where
         .collect();
 
     let on_cls = on_close.clone();
+    let (bg_r, bg_g, bg_b) = theme.dark_base;
+    let modal_bg = Color::Rgb {
+        r: bg_r,
+        g: bg_g,
+        b: bg_b,
+    };
+
     element! {
         View(
             flex_direction: FlexDirection::Column,
             border_style: BorderStyle::Double,
             border_color: theme.highlight,
+            background_color: modal_bg,
             padding_top: 1,
             padding_bottom: 1,
             padding_left: 2,
