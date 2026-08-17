@@ -103,7 +103,7 @@ pub fn render(
                 Text(
                     color: theme.keybinds_dim,
                     content: format!(
-                        "[Space] Play  [←][→] ±5s  [S] spectrum: {}  [C] theme: {}  [N] note  [Q] Quit",
+                        "[Space] Play  [←][→] ±5s  [[ ][]] Track  [S] spectrum: {}  [C] theme: {}  [N] note  [Q] Quit",
                         style.name(),
                         theme_preset.name(),
                     ),
@@ -114,6 +114,16 @@ pub fn render(
     } else {
         Vec::new()
     };
+
+    let track_badge = session.as_ref().and_then(|s| {
+        let p = s.playlist.read().ok()?;
+        if p.len() > 1 {
+            let idx = *s.track_index.read().ok()?;
+            Some(format!(" [{}/{}]", idx + 1, p.len()))
+        } else {
+            None
+        }
+    });
 
     let shimmer_chars: Vec<AnyElement<'static>> = config::APP_NAME
         .chars()
@@ -134,6 +144,9 @@ pub fn render(
         View(justify_content: JustifyContent::SpaceBetween, width: 100pct) {
             View(flex_direction: FlexDirection::Row) {
                 #(shimmer_chars)
+                #(track_badge.map(|b| element! {
+                    Text(color: theme.elapsed, weight: Weight::Bold, content: b)
+                }))
             }
             #(keybinds)
             View(flex_direction: FlexDirection::Row) {

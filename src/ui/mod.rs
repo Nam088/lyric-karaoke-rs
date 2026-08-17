@@ -12,9 +12,10 @@ pub mod header;
 pub mod lyric_line;
 pub mod spectrum;
 
-use std::sync::{Arc, Mutex};
+use std::sync::{Arc, Mutex, RwLock};
 use std::time::{Duration, Instant};
 
+use anyhow::Result;
 use iocraft::prelude::*;
 
 use crate::analysis::{envelope::Envelope, Analyzer, FFT_SIZE};
@@ -22,15 +23,96 @@ use crate::audio::Audio;
 use crate::color;
 use crate::config;
 use crate::lyrics::{self, Sentence};
+use crate::playlist::{Playlist, Track};
 use layout::Layout;
 use lyric_line::Status;
 
-/// Everything built once at startup and then only read.
+/// Multi-track session with dynamic playlist, audio, lyrics, and envelope.
 pub struct Session {
     pub audio: Audio,
-    pub sentences: Vec<Sentence>,
-    pub envelope: Envelope,
+    pub playlist: Arc<RwLock<Playlist>>,
+    pub track_index: Arc<RwLock<usize>>,
+    pub current_track: Arc<RwLock<Track>>,
+    pub sentences: Arc<RwLock<Vec<Sentence>>>,
+    pub envelope: Arc<RwLock<Envelope>>,
     pub start_ms: i64,
+}
+
+impl Session {
+    pub fn new(
+        playlist: Playlist,
+        track_index: usize,
+        current_track: Track,
+        audio: Audio,
+        sentences: Vec<Sentence>,
+        envelope: Envelope,
+        start_ms: i64,
+    ) -> Self {
+        Self {
+            audio,
+            playlist: Arc::new(RwLock::new(playlist)),
+            track_index: Arc::new(RwLock::new(track_index)),
+            current_track: Arc::new(RwLock::new(current_track)),
+            sentences: Arc::new(RwLock::new(sentences)),
+            envelope: Arc::new(RwLock::new(envelope)),
+            start_ms,
+        }
+    }
+
+    pub fn switch_track(&self, index: usize) -> Result<()> {
+        let (track, total_tracks) = {
+            let p = self.playlist.read().unwrap();
+            if p.is_empty() {
+                return Ok(());
+            }
+            let idx = index % p.len();
+            (p.get(idx).cloned().unwrap(), p.len())
+        };
+
+        let audio_path = crate::audio::resolve_path(config::DATA_DIR, &track.audio)?;
+        let lyric_path = crate::audio::resolve_path(config::DATA_DIR, &track.lyrics)?;
+        let sentences = crate::lyrics::load(&lyric_path)?;
+        let envelope = crate::analysis::envelope::Envelope::scan(audio_path.clone());
+
+        self.audio.load_file(&audio_path)?;
+
+        {
+            let mut s = self.sentences.write().unwrap();
+            *s = sentences;
+        }
+        {
+            let mut e = self.envelope.write().unwrap();
+            *e = envelope;
+        }
+        {
+            let mut t = self.current_track.write().unwrap();
+            *t = track;
+        }
+        {
+            let mut ti = self.track_index.write().unwrap();
+            *ti = index % total_tracks;
+        }
+
+        Ok(())
+    }
+
+    pub fn next_track(&self) -> Result<()> {
+        let next_idx = {
+            let p = self.playlist.read().unwrap();
+            let curr = *self.track_index.read().unwrap();
+            p.next_index(curr)
+        };
+        self.switch_track(next_idx)
+    }
+
+    pub fn prev_track(&self) -> Result<()> {
+        let prev_idx = {
+            let p = self.playlist.read().unwrap();
+            let curr = *self.track_index.read().unwrap();
+            p.prev_index(curr)
+        };
+        self.switch_track(prev_idx)
+    }
 }
 
 #[derive(Default, Props)]
@@ -76,6 +158,11 @@ pub fn App(props: &AppProps, mut hooks: Hooks) -> impl Into<AnyElement<'static>>
                 .unwrap()
                 .feed(&s.audio.ring().latest(FFT_SIZE), s.audio.sample_rate(), dt);
 
+            // Auto-advance to next track when song finishes
+            if s.audio.is_ended() && s.audio.position_ms() >= s.audio.total_ms() - 200 {
+                let _ = s.next_track();
+            }
+
             // Bumping a counter is what asks iocraft to redraw. The frame
             // number itself is never displayed.
             frame += 1;
@@ -106,6 +193,12 @@ pub fn App(props: &AppProps, mut hooks: Hooks) -> impl Into<AnyElement<'static>>
             KeyCode::Char('n') | KeyCode::Char('N') => {
                 let v = show_note.get();
                 show_note.set(!v);
+            }
+            KeyCode::Char('[') | KeyCode::Char('p') | KeyCode::Char('P') => {
+                let _ = s.prev_track();
+            }
+            KeyCode::Char(']') | KeyCode::Char('o') | KeyCode::Char('O') => {
+                let _ = s.next_track();
             }
             KeyCode::Char(' ') => s.audio.toggle(),
             KeyCode::Left => {
@@ -154,6 +247,9 @@ pub fn App(props: &AppProps, mut hooks: Hooks) -> impl Into<AnyElement<'static>>
         (layout.spectrum_rows > 0)
             .then(|| spectrum::render(&a, inner, layout.spectrum_rows, spectrum_style.get(), &theme))
     };
+
+    let track_display = session.current_track.read().unwrap().display_name();
+    let envelope = session.envelope.read().unwrap().clone();
 
     element! {
         View(
@@ -209,14 +305,14 @@ pub fn App(props: &AppProps, mut hooks: Hooks) -> impl Into<AnyElement<'static>>
                     margin_top: 1,
                 ) {
                     #(layout.show_ticker.then(|| footer::ticker(
-                        config::SONG_NAME,
+                        &track_display,
                         now,
                         (inner as f32 * config::TICKER_WIDTH_RATIO) as usize,
                         &theme,
                     )))
                     #(spectrum)
                     #(footer::timeline(
-                        &session.envelope,
+                        &envelope,
                         now,
                         total,
                         (inner as f32 * config::TIMELINE_WIDTH_RATIO) as usize,
@@ -252,7 +348,8 @@ fn visible_lines(
     layout: &Layout,
     theme: &color::Theme,
 ) -> Vec<AnyElement<'static>> {
-    let sentences = &session.sentences;
+    let sentences_guard = session.sentences.read().unwrap();
+    let sentences = &*sentences_guard;
     if sentences.is_empty() {
         return vec![element! {
             Text(color: theme.paused, content: "No lyrics loaded.")

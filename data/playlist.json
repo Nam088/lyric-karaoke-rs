@@ -1,0 +1,23 @@
+[
+    {
+        "id": "c",
+        "title": "Mùa Hè Năm Ấy",
+        "artist": "Vũ",
+        "audio": "c.mp3",
+        "lyrics": "c.json"
+    },
+    {
+        "id": "a1",
+        "title": "NOTHING WITHOUT YOU",
+        "artist": "JUNE",
+        "audio": "a1.mp3",
+        "lyrics": "a1.json"
+    },
+    {
+        "id": "b",
+        "title": "Tìm Em",
+        "artist": "Hngle, Bảo Anh",
+        "audio": "b.mp3",
+        "lyrics": "b.json"
+    }
+]

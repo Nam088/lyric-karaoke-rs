@@ -9,8 +9,8 @@
 pub const APP_NAME: &str = "Karaoke";
 pub const LIVE_LABEL: &str = "● LIVE";
 pub const PAUSED_LABEL: &str = "⏸ PAUSED";
-pub const SONG_NAME: &str = "Tìm Em - Hngle, Bảo Anh";
-pub const SONG_FILE: &str = "b.mp3";
+pub const SONG_NAME: &str = "Mùa Hè Năm Ấy";
+pub const SONG_FILE: &str = "c.mp3";
 pub const GAP_TEXT: &str = "♫  ♪  ♫  ♪  ♫  ♪  ♫";
 pub const GAP_ALT_TEXT: &str = "♪  ♫  ♪  ♫  ♪  ♫  ♪";
 
@@ -130,5 +130,6 @@ pub const SPECTRUM_ROWS: usize = 4;
 
 // ── Paths ──────────────────────────────────────────────────────────────
 
+pub const PLAYLIST_FILE: &str = "playlist.json";
 pub const LYRIC_JSON: &str = "data/lr.json";
 pub const DATA_DIR: &str = "data";

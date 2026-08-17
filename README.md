@@ -94,17 +94,53 @@ pub const LINE_SPACING: usize = 0;     // 0 = các dòng lyric liền kề, 1 = 
 | --- | --- |
 | `Space` | Play / Pause bài hát |
 | `←` / `→` | Tua lùi / Tua tới 5 giây (±5s) |
+| `[` hoặc `P` | Chuyển về Bài Hát Trước (Previous Track) |
+| `]` hoặc `O` | Chuyển sang Bài Hát Tiếp Theo (Next Track) |
 | `C` | Đổi Bảng Màu Theme Preset (`Emerald` ➔ `Cyberpunk` ➔ `Ocean` ➔ `Sunset` ➔ `Sakura` ➔ `Mono` ➔ `Light`) |
 | `S` | Đổi kiểu Visualizer Spectrum (`Curve` ➔ `Mirror` ➔ `Line` ➔ `Bars` ➔ `Off`) |
 | `N` | Bật / Tắt hiển thị Nốt nhạc (Pitch Detection & Cents offset) |
 | `H` | Bật / Tắt thanh hướng dẫn phím tắt ở header |
-| `Q` / `Esc` | Thoát chương trình |
+| `Q` / `Esc` | Thoát ứng dụng |
 
-### Bằng chuột (Mouse click support):
-* **Click vào bất kỳ dòng Lyric nào**: Nhảy (Seek) ngay lập tức đến đoạn hát của dòng đó.
-* **Click vào thanh Timeline**: Seek trực tiếp và chính xác đến từng giây bạn bấm.
-* **Click vào `● LIVE` / `⏸ PAUSED`**: Toggle Play / Pause.
-* **Click các nút Transport `|◄`, `▌▌ / ►`, `►|`**: Lùi dòng / Play-Pause / Tới dòng kế tiếp.
+### Bằng chuột:
+* **Click vào bất kỳ dòng lyric nào**: Lập tức tua đến câu hát đó.
+* **Click vào nút `|◄`**: Tua về đầu câu/bài hát, hoặc lùi về bài trước.
+* **Click vào nút `▌▌` / `►`**: Play / Pause.
+* **Click vào nút `►|`**: Nhảy sang câu hát tiếp theo hoặc chuyển bài.
+* **Click vào thanh Timeline**: Nhảy ngay đến vị trí mong muốn.
+* **Click vào chữ `● LIVE` / `⏸ PAUSED`**: Play / Pause.
+
+---
+
+## 📑 Danh Sách Phát (Playlist Support)
+
+Ứng dụng hỗ trợ phát nhiều bài hát liên tục thông qua danh sách trong [`data/playlist.json`](data/playlist.json):
+
+```json
+[
+    {
+        "id": "mua-he-nam-ay",
+        "title": "Mùa Hè Năm Ấy",
+        "artist": "Vũ",
+        "audio": "c.mp3",
+        "lyrics": "c.json"
+    },
+    {
+        "id": "nothing-without-you",
+        "title": "NOTHING WITHOUT YOU",
+        "artist": "JUNE",
+        "audio": "a1.mp3",
+        "lyrics": "a1.json"
+    }
+]
+```
+
+* **Tự động chuyển bài (Auto-advance)**: Khi bài hát kết thúc, player sẽ tự động chuyển sang bài tiếp theo trong danh sách.
+* **Tự động thêm bài hát mới**: Dùng tool `audio-aligner/batch_add_song.py` để tự động bóc tách từ và nạp bài mới vào playlist:
+  ```bash
+  cd ../audio-aligner
+  ./venv/bin/python batch_add_song.py /path/to/song.mp3 --lyrics /path/to/lyric.txt --title "Tên Bài" --artist "Ca Sĩ" -l vi
+  ```
 
 ---
 

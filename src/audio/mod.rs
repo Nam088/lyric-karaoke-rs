@@ -23,17 +23,23 @@ use std::time::Duration;
 use anyhow::{anyhow, Context, Result};
 use rodio::{Decoder, DeviceSinkBuilder, MixerDeviceSink, Player, Source};
 
+use std::sync::RwLock;
+
 pub use tap::SampleRing;
 use tap::SpectrumTap;
+
+struct AudioInner {
+    total: Duration,
+    sample_rate: f32,
+    path: PathBuf,
+}
 
 pub struct Audio {
     /// Dropping this stops playback, so it has to outlive the player.
     _device: MixerDeviceSink,
     player: Player,
     ring: SampleRing,
-    total: Duration,
-    sample_rate: f32,
-    path: PathBuf,
+    inner: RwLock<AudioInner>,
 }
 
 impl Audio {
@@ -65,30 +71,68 @@ impl Audio {
             _device: device,
             player,
             ring,
-            total,
-            sample_rate,
-            path: path.to_path_buf(),
+            inner: RwLock::new(AudioInner {
+                total,
+                sample_rate,
+                path: path.to_path_buf(),
+            }),
         })
+    }
+
+    pub fn load_file(&self, path: impl AsRef<Path>) -> Result<()> {
+        let path = path.as_ref();
+        let total = Decoder::try_from(
+            File::open(path)
+                .with_context(|| format!("opening audio file {}", path.display()))?,
+        )
+        .with_context(|| format!("decoding {}", path.display()))?
+        .total_duration()
+        .ok_or_else(|| anyhow!("could not determine the duration of {}", path.display()))?;
+
+        self.player.clear();
+        let source = Decoder::try_from(File::open(path)?)?;
+        let sample_rate = source.sample_rate().get() as f32;
+
+        {
+            let mut inner = self.inner.write().unwrap();
+            inner.total = total;
+            inner.sample_rate = sample_rate;
+            inner.path = path.to_path_buf();
+        }
+
+        self.player.append(SpectrumTap::new(source, self.ring.clone()));
+        self.player.play();
+        Ok(())
     }
 
     fn reload_source(&self) -> Result<()> {
         self.player.clear();
-        let file = File::open(&self.path)?;
+        let path = {
+            let inner = self.inner.read().unwrap();
+            inner.path.clone()
+        };
+        let file = File::open(&path)?;
         let source = Decoder::try_from(file)?;
         self.player.append(SpectrumTap::new(source, self.ring.clone()));
         Ok(())
     }
 
     pub fn total_ms(&self) -> i64 {
-        self.total.as_millis() as i64
+        let inner = self.inner.read().unwrap();
+        inner.total.as_millis() as i64
     }
 
     pub fn sample_rate(&self) -> f32 {
-        self.sample_rate
+        let inner = self.inner.read().unwrap();
+        inner.sample_rate
     }
 
     pub fn ring(&self) -> &SampleRing {
         &self.ring
+    }
+
+    pub fn is_ended(&self) -> bool {
+        self.player.empty()
     }
 
     /// The single source of truth for where the song is. Everything on screen

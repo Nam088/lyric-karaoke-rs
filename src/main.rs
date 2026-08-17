@@ -11,8 +11,10 @@ mod braille;
 mod color;
 mod config;
 mod lyrics;
+mod playlist;
 mod ui;
 
+use std::path::Path;
 use std::sync::Arc;
 
 use anyhow::{Context, Result};
@@ -20,6 +22,7 @@ use iocraft::prelude::*;
 
 use analysis::envelope::Envelope;
 use audio::Audio;
+use playlist::{Playlist, Track};
 use ui::{App, Session};
 
 fn main() -> Result<()> {
@@ -44,19 +47,49 @@ fn main() -> Result<()> {
 }
 
 fn load() -> Result<Arc<Session>> {
-    let sentences = lyrics::load(config::LYRIC_JSON)?;
-    let path = audio::resolve_path(config::DATA_DIR, config::SONG_FILE)?;
+    let playlist_path = Path::new(config::DATA_DIR).join(config::PLAYLIST_FILE);
+    let playlist = if playlist_path.exists() {
+        Playlist::load(&playlist_path)?
+    } else {
+        Playlist {
+            tracks: vec![Track {
+                id: "default".into(),
+                title: config::SONG_NAME.into(),
+                artist: "Unknown Artist".into(),
+                audio: config::SONG_FILE.into(),
+                lyrics: config::LYRIC_JSON.into(),
+            }],
+        }
+    };
 
-    // Kicked off before the audio device is opened so the scan overlaps
-    // startup. The timeline draws a plain bar until it lands.
-    let envelope = Envelope::scan(path.clone());
+    let track_idx = 0;
+    let track = playlist.get(track_idx).cloned().unwrap_or_else(|| Track {
+        id: "default".into(),
+        title: config::SONG_NAME.into(),
+        artist: "Unknown Artist".into(),
+        audio: config::SONG_FILE.into(),
+        lyrics: config::LYRIC_JSON.into(),
+    });
 
-    let audio = Audio::open(&path)?;
+    let lyric_path = audio::resolve_path(config::DATA_DIR, &track.lyrics)?;
+    let sentences = lyrics::load(&lyric_path)?;
+
+    let audio_path = audio::resolve_path(config::DATA_DIR, &track.audio)?;
+    let envelope = Envelope::scan(audio_path.clone());
+    let audio = Audio::open(&audio_path)?;
 
     let start_ms = lyrics::parse_time(config::START_TIME);
     if start_ms > 0 {
         audio.seek_ms(start_ms);
     }
 
-    Ok(Arc::new(Session { audio, sentences, envelope, start_ms }))
+    Ok(Arc::new(Session::new(
+        playlist,
+        track_idx,
+        track,
+        audio,
+        sentences,
+        envelope,
+        start_ms,
+    )))
 }

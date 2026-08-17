@@ -240,8 +240,13 @@ pub fn transport(session: Arc<Session>, now: i64, is_playing: bool, theme: &Them
     element! {
         View(justify_content: JustifyContent::Center, width: 100pct, margin_top: 1) {
             Button(handler: move |_| {
-                let target = lyrics::previous_line_start(&back.sentences, now);
-                back.audio.seek_ms(target);
+                let sentences = back.sentences.read().unwrap();
+                let target = lyrics::previous_line_start(&sentences, now);
+                if target == 0 && now < 3000 {
+                    let _ = back.prev_track();
+                } else {
+                    back.audio.seek_ms(target);
+                }
             }) {
                 View(width: 8, justify_content: JustifyContent::Center) {
                     Text(
@@ -259,8 +264,13 @@ pub fn transport(session: Arc<Session>, now: i64, is_playing: bool, theme: &Them
             }
 
             Button(handler: move |_| {
-                let target = lyrics::next_line_start(&forward.sentences, now);
-                forward.audio.seek_ms(target);
+                let sentences = forward.sentences.read().unwrap();
+                let target = lyrics::next_line_start(&sentences, now);
+                if target >= forward.audio.total_ms() - 1000 {
+                    let _ = forward.next_track();
+                } else {
+                    forward.audio.seek_ms(target);
+                }
             }) {
                 View(width: 8, justify_content: JustifyContent::Center) {
                     Text(
