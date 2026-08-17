@@ -77,8 +77,8 @@ pub const VBAR: &str = " │ ";
 pub const TIMELINE_FILLED: char = '━';
 pub const TIMELINE_EMPTY: char = '─';
 pub const TIMELINE_MARKER: char = '●';
-pub const TIMELINE_CAP_LEFT: &str = " ╶";
-pub const TIMELINE_CAP_RIGHT: &str = "╴ ";
+pub const TIMELINE_CAP_LEFT: &str = "  ";
+pub const TIMELINE_CAP_RIGHT: &str = "  ";
 
 /// Draw the song's loudness over time instead of a plain bar.
 ///
