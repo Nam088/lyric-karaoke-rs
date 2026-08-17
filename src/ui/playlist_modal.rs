@@ -362,8 +362,8 @@ where
                 }
             }
 
-            // Quick Toolbar for Folders Tab
-            #(if tab == ModalTab::Folders && !is_busy {
+            // Quick Toolbar for Tracks / Folders Tab
+            #(if !is_busy {
                 Some(element! {
                     View(
                         flex_direction: FlexDirection::Row,
@@ -371,20 +371,40 @@ where
                         margin_bottom: 1,
                         padding_left: 1,
                     ) {
-                        Button(handler: move |_| {
-                            if let Ok(mut f) = on_add_btn.lock() {
-                                f();
-                            }
-                        }) {
-                            Text(color: theme.highlight, weight: Weight::Bold, content: format!("{}   ", lang.btn_add_folder()))
-                        }
-                        Button(handler: move |_| {
-                            if let Ok(mut f) = on_rescan_btn.lock() {
-                                f();
-                            }
-                        }) {
-                            Text(color: theme.lyric_singing, weight: Weight::Bold, content: lang.btn_rescan().to_string())
-                        }
+                        #(if tab == ModalTab::Folders {
+                            vec![
+                                element! {
+                                    Button(handler: move |_| {
+                                        if let Ok(mut f) = on_add_btn.lock() {
+                                            f();
+                                        }
+                                    }) {
+                                        Text(color: theme.highlight, weight: Weight::Bold, content: format!("{}   ", lang.btn_add_folder()))
+                                    }
+                                },
+                                element! {
+                                    Button(handler: move |_| {
+                                        if let Ok(mut f) = on_rescan_btn.lock() {
+                                            f();
+                                        }
+                                    }) {
+                                        Text(color: theme.lyric_singing, weight: Weight::Bold, content: lang.btn_rescan().to_string())
+                                    }
+                                }
+                            ]
+                        } else {
+                            vec![
+                                element! {
+                                    Button(handler: move |_| {
+                                        if let Ok(mut f) = on_rescan_btn.lock() {
+                                            f();
+                                        }
+                                    }) {
+                                        Text(color: theme.lyric_singing, weight: Weight::Bold, content: format!("{} ", lang.btn_rescan()))
+                                    }
+                                }
+                            ]
+                        })
                     }
                 })
             } else {

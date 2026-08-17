@@ -384,6 +384,9 @@ pub fn App(props: &AppProps, mut hooks: Hooks) -> impl Into<AnyElement<'static>>
                             let _ = s.switch_track(target);
                             show_playlist.set(false);
                         }
+                        KeyCode::Char('r') | KeyCode::Char('R') => {
+                            let _ = s.rescan_music_folders();
+                        }
                         KeyCode::Char('i') | KeyCode::Char('I') => {
                             lang.set(lang.get().next());
                         }
@@ -398,6 +401,9 @@ pub fn App(props: &AppProps, mut hooks: Hooks) -> impl Into<AnyElement<'static>>
 
         match code {
             KeyCode::Char('q') | KeyCode::Char('Q') | KeyCode::Esc => should_exit.set(true),
+            KeyCode::Char('r') | KeyCode::Char('R') => {
+                let _ = s.rescan_music_folders();
+            }
             KeyCode::Char('f') | KeyCode::Char('F') => {
                 modal_tab.set(playlist_modal::ModalTab::Folders);
                 folder_cursor.set(0);
