@@ -17,8 +17,8 @@
     "title": "PLAYLIST",
     "folders_title": "MUSIC FOLDERS MANAGER (SQLITE)",
     "close": "[x] Close",
-    "footer_hints": "[↑/↓] Select  •  [Enter] Play  •  [F] Folders  •  [Esc/L] Close",
-    "folder_footer_hints": "[↑/↓] Select  •  [A] Add  •  [D] Delete  •  [R] Rescan  •  [T/Esc] Tracks",
+    "footer_hints": "[↑/↓] Select  •  [←/→] Page  •  [Enter] Play  •  [F] Folders  •  [Esc/L] Close",
+    "folder_footer_hints": "[↑/↓] Select  •  [←/→] Page  •  [A] Add  •  [D] Delete  •  [R] Rescan  •  [T/Esc] Tracks",
     "live_badge": "[LIVE]",
     "tracks_tab": "Tracks",
     "folders_tab": "Folders",
@@ -37,7 +37,10 @@
     "no_lyrics_short": "Instrumental",
     "btn_add_folder": "➕ Add Folder [A]",
     "btn_rescan": "🔄 Rescan All [R]",
-    "btn_delete": "[Delete]"
+    "btn_delete": "[Delete]",
+    "btn_prev_page": "◀ Prev",
+    "btn_next_page": "Next ▶",
+    "page_info": "Page"
   },
   "player": {
     "no_lyrics": "♫ ♪ ♫  (Instrumental / No Lyrics Available)  ♫ ♪ ♫",

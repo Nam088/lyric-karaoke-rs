@@ -308,6 +308,17 @@ pub fn App(props: &AppProps, mut hooks: Hooks) -> impl Into<AnyElement<'static>>
                                 folder_cursor.set(next);
                             }
                         }
+                        KeyCode::Left | KeyCode::PageUp => {
+                            let curr = folder_cursor.get();
+                            folder_cursor.set(curr.saturating_sub(playlist_modal::PAGE_SIZE));
+                        }
+                        KeyCode::Right | KeyCode::PageDown => {
+                            let f_len = s.list_music_folders().len();
+                            if f_len > 0 {
+                                let curr = folder_cursor.get();
+                                folder_cursor.set((curr + playlist_modal::PAGE_SIZE).min(f_len - 1));
+                            }
+                        }
                         KeyCode::Char('i') | KeyCode::Char('I') => {
                             lang.set(lang.get().next());
                         }
@@ -338,6 +349,17 @@ pub fn App(props: &AppProps, mut hooks: Hooks) -> impl Into<AnyElement<'static>>
                                 let curr = playlist_cursor.get();
                                 let next = (curr + 1) % p_len;
                                 playlist_cursor.set(next);
+                            }
+                        }
+                        KeyCode::Left | KeyCode::PageUp => {
+                            let curr = playlist_cursor.get();
+                            playlist_cursor.set(curr.saturating_sub(playlist_modal::PAGE_SIZE));
+                        }
+                        KeyCode::Right | KeyCode::PageDown => {
+                            let p_len = s.playlist.read().unwrap().len();
+                            if p_len > 0 {
+                                let curr = playlist_cursor.get();
+                                playlist_cursor.set((curr + playlist_modal::PAGE_SIZE).min(p_len - 1));
                             }
                         }
                         KeyCode::Enter => {
@@ -455,6 +477,7 @@ pub fn App(props: &AppProps, mut hooks: Hooks) -> impl Into<AnyElement<'static>>
     let s_select = session.clone();
     let s_rescan = session.clone();
     let s_del = session.clone();
+    let s_page = session.clone();
 
     let modal_overlay = show_playlist.get().then(|| {
         let input_str = folder_input.read().clone();
@@ -506,6 +529,36 @@ pub fn App(props: &AppProps, mut hooks: Hooks) -> impl Into<AnyElement<'static>>
                     },
                     move |idx| {
                         folder_cursor.set(idx);
+                    },
+                    move || {
+                        match modal_tab.get() {
+                            playlist_modal::ModalTab::Tracks => {
+                                let curr = playlist_cursor.get();
+                                playlist_cursor.set(curr.saturating_sub(playlist_modal::PAGE_SIZE));
+                            }
+                            playlist_modal::ModalTab::Folders => {
+                                let curr = folder_cursor.get();
+                                folder_cursor.set(curr.saturating_sub(playlist_modal::PAGE_SIZE));
+                            }
+                        }
+                    },
+                    move || {
+                        match modal_tab.get() {
+                            playlist_modal::ModalTab::Tracks => {
+                                let p_len = s_page.playlist.read().unwrap().len();
+                                if p_len > 0 {
+                                    let curr = playlist_cursor.get();
+                                    playlist_cursor.set((curr + playlist_modal::PAGE_SIZE).min(p_len - 1));
+                                }
+                            }
+                            playlist_modal::ModalTab::Folders => {
+                                let f_len = s_page.list_music_folders().len();
+                                if f_len > 0 {
+                                    let curr = folder_cursor.get();
+                                    folder_cursor.set((curr + playlist_modal::PAGE_SIZE).min(f_len - 1));
+                                }
+                            }
+                        }
                     },
                 ))
             }

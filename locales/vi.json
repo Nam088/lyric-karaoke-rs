@@ -17,8 +17,8 @@
     "title": "DANH SÁCH BÀI HÁT",
     "folders_title": "QUẢN LÝ THƯ MỤC NHẠC (SQLITE)",
     "close": "[x] Đóng",
-    "footer_hints": "[↑/↓] Chọn  •  [Enter] Phát  •  [F] Thư Mục  •  [Esc/L] Đóng",
-    "folder_footer_hints": "[↑/↓] Chọn  •  [A] Thêm  •  [D] Xóa  •  [R] Quét lại  •  [T/Esc] Về DS",
+    "footer_hints": "[↑/↓] Chọn  •  [←/→] Lật trang  •  [Enter] Phát  •  [F] Thư Mục  •  [Esc/L] Đóng",
+    "folder_footer_hints": "[↑/↓] Chọn  •  [←/→] Lật trang  •  [A] Thêm  •  [D] Xóa  •  [R] Quét lại  •  [T/Esc] Về DS",
     "live_badge": "[LIVE]",
     "tracks_tab": "Bài hát",
     "folders_tab": "Thư mục",
@@ -37,7 +37,10 @@
     "no_lyrics_short": "Không lời",
     "btn_add_folder": "➕ Thêm Thư Mục [A]",
     "btn_rescan": "🔄 Quét Lại [R]",
-    "btn_delete": "[Xóa]"
+    "btn_delete": "[Xóa]",
+    "btn_prev_page": "◀ Trước",
+    "btn_next_page": "Sau ▶",
+    "page_info": "Trang"
   },
   "player": {
     "no_lyrics": "♫ ♪ ♫  (Bài hát không có lời / Instrumental)  ♫ ♪ ♫",

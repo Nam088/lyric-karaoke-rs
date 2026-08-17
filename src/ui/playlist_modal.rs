@@ -1,4 +1,4 @@
-//! Interactive Playlist & Music Folders Manager Modal Dialog formatted as an interactive Table with button cells.
+//! Interactive Playlist & Music Folders Manager Modal Dialog with dynamic Pagination & Table Layout.
 
 use std::sync::{Arc, Mutex};
 
@@ -7,6 +7,8 @@ use iocraft::prelude::*;
 use super::Session;
 use crate::color::Theme;
 use crate::i18n::Language;
+
+pub const PAGE_SIZE: usize = 6;
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Default)]
 pub enum ModalTab {
@@ -42,7 +44,7 @@ fn pad_truncate(s: &str, target_width: usize) -> String {
 }
 
 #[allow(clippy::too_many_arguments)]
-pub fn render<FSelect, FClose, FTabChange, FAddFolder, FRescan, FDeleteFolder, FSelectFolder>(
+pub fn render<FSelect, FClose, FTabChange, FAddFolder, FRescan, FDeleteFolder, FSelectFolder, FPrevPage, FNextPage>(
     session: Arc<Session>,
     tab: ModalTab,
     cursor: usize,
@@ -59,6 +61,8 @@ pub fn render<FSelect, FClose, FTabChange, FAddFolder, FRescan, FDeleteFolder, F
     on_rescan: FRescan,
     on_delete_folder: FDeleteFolder,
     on_select_folder: FSelectFolder,
+    on_prev_page: FPrevPage,
+    on_next_page: FNextPage,
 ) -> AnyElement<'static>
 where
     FSelect: FnMut(usize) + Send + 'static,
@@ -68,6 +72,8 @@ where
     FRescan: FnMut() + Send + 'static,
     FDeleteFolder: FnMut(usize) + Send + 'static,
     FSelectFolder: FnMut(usize) + Send + 'static,
+    FPrevPage: FnMut() + Send + 'static,
+    FNextPage: FnMut() + Send + 'static,
 {
     let playlist = session.playlist.read().unwrap();
     let current_idx = *session.track_index.read().unwrap();
@@ -80,6 +86,8 @@ where
     let on_rescan = Arc::new(Mutex::new(on_rescan));
     let on_delete_folder = Arc::new(Mutex::new(on_delete_folder));
     let on_select_folder = Arc::new(Mutex::new(on_select_folder));
+    let on_prev_page = Arc::new(Mutex::new(on_prev_page));
+    let on_next_page = Arc::new(Mutex::new(on_next_page));
 
     let (bg_r, bg_g, bg_b) = theme.dark_base;
     let modal_bg = Color::Rgb {
@@ -92,82 +100,96 @@ where
     let col_title_w = 32;
     let col_artist_w = 22;
 
-    // ── Tab 1: Tracks Table Button Rows ──
-    let track_rows: Vec<AnyElement<'static>> = playlist
-        .tracks
-        .iter()
-        .enumerate()
-        .map(|(idx, track)| {
-            let is_current = idx == current_idx;
-            let is_selected = idx == cursor;
+    // ── Pagination Calculation ──
+    let total_tracks = playlist.tracks.len();
+    let track_total_pages = total_tracks.max(1).div_ceil(PAGE_SIZE);
+    let track_page = if total_tracks == 0 { 0 } else { (cursor / PAGE_SIZE).min(track_total_pages - 1) };
+    let track_start = track_page * PAGE_SIZE;
+    let track_end = (track_start + PAGE_SIZE).min(total_tracks);
 
-            let prefix = if is_current {
-                if is_playing { "▶" } else { "■" }
-            } else if is_selected {
-                "→"
-            } else {
-                " "
-            };
+    // ── Tab 1: Paginated Tracks Table Button Rows ──
+    let track_rows: Vec<AnyElement<'static>> = if total_tracks == 0 {
+        vec![element! {
+            Text(color: theme.paused, content: " (Danh sách bài hát trống)")
+        }
+        .into()]
+    } else {
+        playlist.tracks[track_start..track_end]
+            .iter()
+            .enumerate()
+            .map(|(offset, track)| {
+                let idx = track_start + offset;
+                let is_current = idx == current_idx;
+                let is_selected = idx == cursor;
 
-            let num_str = format!("{}{:02}", prefix, idx + 1);
-            let no_col = pad_truncate(&num_str, col_no_w);
-            let title_col = pad_truncate(&track.title, col_title_w);
-            let artist_str = if track.artist.is_empty() { "Unknown Artist" } else { &track.artist };
-            let artist_col = pad_truncate(artist_str, col_artist_w);
+                let prefix = if is_current {
+                    if is_playing { "▶" } else { "■" }
+                } else if is_selected {
+                    "→"
+                } else {
+                    " "
+                };
 
-            let (text_color, weight) = if is_current {
-                (theme.highlight, Weight::Bold)
-            } else if is_selected {
-                (theme.lyric_singing, Weight::Bold)
-            } else {
-                (theme.lyric_future, Weight::Normal)
-            };
+                let num_str = format!("{}{:02}", prefix, idx + 1);
+                let no_col = pad_truncate(&num_str, col_no_w);
+                let title_col = pad_truncate(&track.title, col_title_w);
+                let artist_str = if track.artist.is_empty() { "Unknown Artist" } else { &track.artist };
+                let artist_col = pad_truncate(artist_str, col_artist_w);
 
-            let s = session.clone();
-            let on_sel = on_select.clone();
+                let (text_color, weight) = if is_current {
+                    (theme.highlight, Weight::Bold)
+                } else if is_selected {
+                    (theme.lyric_singing, Weight::Bold)
+                } else {
+                    (theme.lyric_future, Weight::Normal)
+                };
 
-            element! {
-                Button(handler: move |_| {
-                    let _ = s.switch_track(idx);
-                    if let Ok(mut f) = on_sel.lock() {
-                        f(idx);
-                    }
-                }) {
-                    View(
-                        flex_direction: FlexDirection::Row,
-                        padding_left: 1,
-                        padding_right: 1,
-                        width: 100pct,
-                        justify_content: JustifyContent::SpaceBetween,
-                        border_style: if is_selected { BorderStyle::Single } else { BorderStyle::None },
-                        border_color: if is_selected { theme.highlight } else { Color::Reset },
-                    ) {
-                        View(flex_direction: FlexDirection::Row) {
-                            Text(color: if is_current { theme.live } else { theme.elapsed }, weight: weight, content: no_col)
-                            Text(color: text_color, weight: weight, content: format!(" {}", title_col))
-                            Text(color: theme.remaining, content: format!(" {}", artist_col))
+                let s = session.clone();
+                let on_sel = on_select.clone();
+
+                element! {
+                    Button(handler: move |_| {
+                        let _ = s.switch_track(idx);
+                        if let Ok(mut f) = on_sel.lock() {
+                            f(idx);
                         }
-                        View(flex_direction: FlexDirection::Row) {
-                            #(if is_current {
-                                Some(element! {
-                                    Text(color: theme.live, weight: Weight::Bold, content: format!(" {} ", lang.live_badge()))
+                    }) {
+                        View(
+                            flex_direction: FlexDirection::Row,
+                            padding_left: 1,
+                            padding_right: 1,
+                            width: 100pct,
+                            justify_content: JustifyContent::SpaceBetween,
+                            border_style: if is_selected { BorderStyle::Single } else { BorderStyle::None },
+                            border_color: if is_selected { theme.highlight } else { Color::Reset },
+                        ) {
+                            View(flex_direction: FlexDirection::Row) {
+                                Text(color: if is_current { theme.live } else { theme.elapsed }, weight: weight, content: no_col)
+                                Text(color: text_color, weight: weight, content: format!(" {}", title_col))
+                                Text(color: theme.remaining, content: format!(" {}", artist_col))
+                            }
+                            View(flex_direction: FlexDirection::Row) {
+                                #(if is_current {
+                                    Some(element! {
+                                        Text(color: theme.live, weight: Weight::Bold, content: format!(" {} ", lang.live_badge()))
+                                    })
+                                } else if !track.lyrics.is_empty() {
+                                    Some(element! {
+                                        Text(color: theme.remaining, content: " [♫] ".to_string())
+                                    })
+                                } else {
+                                    Some(element! {
+                                        Text(color: theme.keybinds_dim, content: " [-] ".to_string())
+                                    })
                                 })
-                            } else if !track.lyrics.is_empty() {
-                                Some(element! {
-                                    Text(color: theme.remaining, content: " [♫] ".to_string())
-                                })
-                            } else {
-                                Some(element! {
-                                    Text(color: theme.keybinds_dim, content: " [-] ".to_string())
-                                })
-                            })
+                            }
                         }
                     }
                 }
-            }
-            .into()
-        })
-        .collect();
+                .into()
+            })
+            .collect()
+    };
 
     // ── Tab 2: Configured Folders Table Button Rows ──
     let folders = session.list_music_folders();
@@ -175,16 +197,23 @@ where
     let col_f_path_w = 44;
     let col_f_count_w = 12;
 
-    let folder_rows: Vec<AnyElement<'static>> = if folders.is_empty() {
+    let total_folders = folders.len();
+    let folder_total_pages = total_folders.max(1).div_ceil(PAGE_SIZE);
+    let folder_page = if total_folders == 0 { 0 } else { (folder_cursor / PAGE_SIZE).min(folder_total_pages - 1) };
+    let folder_start = folder_page * PAGE_SIZE;
+    let folder_end = (folder_start + PAGE_SIZE).min(total_folders);
+
+    let folder_rows: Vec<AnyElement<'static>> = if total_folders == 0 {
         vec![element! {
             Text(color: theme.paused, content: format!(" {}", lang.folder_empty()))
         }
         .into()]
     } else {
-        folders
+        folders[folder_start..folder_end]
             .iter()
             .enumerate()
-            .map(|(idx, f_path)| {
+            .map(|(offset, f_path)| {
+                let idx = folder_start + offset;
                 let is_selected = idx == folder_cursor;
                 let prefix = if is_selected { "→" } else { " " };
                 let num_str = format!("{}{:02}", prefix, idx + 1);
@@ -254,9 +283,16 @@ where
     let on_tab_f = on_tab_change.clone();
     let on_add_btn = on_add_folder.clone();
     let on_rescan_btn = on_rescan.clone();
+    let on_prev_btn = on_prev_page.clone();
+    let on_next_btn = on_next_page.clone();
 
     let tab_tracks_color = if tab == ModalTab::Tracks { theme.highlight } else { theme.remaining };
     let tab_folders_color = if tab == ModalTab::Folders { theme.highlight } else { theme.remaining };
+
+    let (active_page, total_p, item_total_str) = match tab {
+        ModalTab::Tracks => (track_page + 1, track_total_pages, format!("{} {}", total_tracks, lang.folder_count())),
+        ModalTab::Folders => (folder_page + 1, folder_total_pages, format!("{} {}", total_folders, lang.folders_tab())),
+    };
 
     element! {
         View(
@@ -457,6 +493,59 @@ where
                     }
                 })
             }
+
+            // Pagination Controls Bar
+            #(if !is_adding_folder && total_p > 1 {
+                Some(element! {
+                    View(
+                        flex_direction: FlexDirection::Row,
+                        justify_content: JustifyContent::SpaceBetween,
+                        align_items: AlignItems::Center,
+                        width: 100pct,
+                        margin_top: 1,
+                        padding_left: 1,
+                        padding_right: 1,
+                    ) {
+                        Button(handler: move |_| {
+                            if let Ok(mut f) = on_prev_btn.lock() {
+                                f();
+                            }
+                        }) {
+                            View(
+                                border_style: BorderStyle::Single,
+                                border_color: theme.remaining,
+                                padding_left: 1,
+                                padding_right: 1,
+                            ) {
+                                Text(color: theme.highlight, weight: Weight::Bold, content: lang.btn_prev_page().to_string())
+                            }
+                        }
+
+                        Text(
+                            color: theme.elapsed,
+                            weight: Weight::Normal,
+                            content: format!("{} {} / {} ({})", lang.page_info(), active_page, total_p, item_total_str),
+                        )
+
+                        Button(handler: move |_| {
+                            if let Ok(mut f) = on_next_btn.lock() {
+                                f();
+                            }
+                        }) {
+                            View(
+                                border_style: BorderStyle::Single,
+                                border_color: theme.remaining,
+                                padding_left: 1,
+                                padding_right: 1,
+                            ) {
+                                Text(color: theme.highlight, weight: Weight::Bold, content: lang.btn_next_page().to_string())
+                            }
+                        }
+                    }
+                })
+            } else {
+                None
+            })
 
             // Footer keyboard hints
             View(

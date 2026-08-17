@@ -70,13 +70,19 @@ pub struct PlaylistLocale {
     pub btn_rescan: String,
     #[serde(default = "default_btn_delete")]
     pub btn_delete: String,
+    #[serde(default = "default_btn_prev_page")]
+    pub btn_prev_page: String,
+    #[serde(default = "default_btn_next_page")]
+    pub btn_next_page: String,
+    #[serde(default = "default_page_info")]
+    pub page_info: String,
 }
 
 fn default_folders_title() -> String {
     "QUẢN LÝ THƯ MỤC NHẠC".to_string()
 }
 fn default_folder_footer_hints() -> String {
-    "[↑/↓] Chọn  •  [A] Thêm  •  [D] Xóa  •  [R] Quét lại  •  [T/Esc] Về DS".to_string()
+    "[↑/↓] Chọn  •  [←/→] Lật trang  •  [A] Thêm  •  [D] Xóa  •  [R] Quét lại  •  [T/Esc] Về DS".to_string()
 }
 fn default_tracks_tab() -> String {
     "Bài hát".to_string()
@@ -131,6 +137,15 @@ fn default_btn_rescan() -> String {
 }
 fn default_btn_delete() -> String {
     "[Xóa]".to_string()
+}
+fn default_btn_prev_page() -> String {
+    "◀ Trước".to_string()
+}
+fn default_btn_next_page() -> String {
+    "Sau ▶".to_string()
+}
+fn default_page_info() -> String {
+    "Trang".to_string()
 }
 
 #[derive(Clone, Debug, Deserialize)]
@@ -331,6 +346,21 @@ impl Language {
     /// Button: Delete folder.
     pub fn btn_delete(self) -> &'static str {
         &self.config().playlist.btn_delete
+    }
+
+    /// Button: Previous page.
+    pub fn btn_prev_page(self) -> &'static str {
+        &self.config().playlist.btn_prev_page
+    }
+
+    /// Button: Next page.
+    pub fn btn_next_page(self) -> &'static str {
+        &self.config().playlist.btn_next_page
+    }
+
+    /// Page info label.
+    pub fn page_info(self) -> &'static str {
+        &self.config().playlist.page_info
     }
 
     /// Live badge text inside playlist modal.
