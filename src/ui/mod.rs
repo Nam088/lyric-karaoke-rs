@@ -453,6 +453,8 @@ pub fn App(props: &AppProps, mut hooks: Hooks) -> impl Into<AnyElement<'static>>
 
     let s_toggle = session.clone();
     let s_select = session.clone();
+    let s_rescan = session.clone();
+    let s_del = session.clone();
 
     let modal_overlay = show_playlist.get().then(|| {
         let input_str = folder_input.read().clone();
@@ -484,6 +486,23 @@ pub fn App(props: &AppProps, mut hooks: Hooks) -> impl Into<AnyElement<'static>>
                     },
                     move |tab| {
                         modal_tab.set(tab);
+                    },
+                    move || {
+                        folder_input.set(String::new());
+                        is_adding_folder.set(true);
+                    },
+                    move || {
+                        let _ = s_rescan.rescan_music_folders();
+                    },
+                    move |idx| {
+                        let folders = s_del.list_music_folders();
+                        if let Some(f) = folders.get(idx) {
+                            let _ = s_del.remove_music_folder(f);
+                        }
+                        let remaining = s_del.list_music_folders().len();
+                        if folder_cursor.get() >= remaining && remaining > 0 {
+                            folder_cursor.set(remaining - 1);
+                        }
                     },
                 ))
             }

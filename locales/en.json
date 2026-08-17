@@ -25,7 +25,19 @@
     "add_folder_prompt": "Enter music directory path:",
     "add_folder_hints": "[Enter] Save to SQLite  •  [Esc] Cancel",
     "folder_empty": "No music folders configured.",
-    "folder_count": "tracks"
+    "folder_count": "tracks",
+    "th_no": "#",
+    "th_title": "TRACK TITLE",
+    "th_artist": "ARTIST",
+    "th_status": "STATUS",
+    "th_folder": "FOLDER PATH",
+    "th_count": "TRACKS",
+    "th_action": "ACTION",
+    "has_lyrics": "Lyrics",
+    "no_lyrics_short": "Instrumental",
+    "btn_add_folder": "➕ Add Folder [A]",
+    "btn_rescan": "🔄 Rescan All [R]",
+    "btn_delete": "[Delete]"
   },
   "player": {
     "no_lyrics": "♫ ♪ ♫  (Instrumental / No Lyrics Available)  ♫ ♪ ♫",

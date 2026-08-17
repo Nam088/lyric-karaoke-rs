@@ -24,8 +24,10 @@ fn default_folders_label() -> String {
 
 #[derive(Clone, Debug, Deserialize)]
 pub struct PlaylistLocale {
+    #[allow(dead_code)]
     pub title: String,
     #[serde(default = "default_folders_title")]
+    #[allow(dead_code)]
     pub folders_title: String,
     pub close: String,
     pub footer_hints: String,
@@ -44,6 +46,30 @@ pub struct PlaylistLocale {
     pub folder_empty: String,
     #[serde(default = "default_folder_count")]
     pub folder_count: String,
+    #[serde(default = "default_th_no")]
+    pub th_no: String,
+    #[serde(default = "default_th_title")]
+    pub th_title: String,
+    #[serde(default = "default_th_artist")]
+    pub th_artist: String,
+    #[serde(default = "default_th_status")]
+    pub th_status: String,
+    #[serde(default = "default_th_folder")]
+    pub th_folder: String,
+    #[serde(default = "default_th_count")]
+    pub th_count: String,
+    #[serde(default = "default_th_action")]
+    pub th_action: String,
+    #[serde(default = "default_has_lyrics")]
+    pub has_lyrics: String,
+    #[serde(default = "default_no_lyrics_short")]
+    pub no_lyrics_short: String,
+    #[serde(default = "default_btn_add_folder")]
+    pub btn_add_folder: String,
+    #[serde(default = "default_btn_rescan")]
+    pub btn_rescan: String,
+    #[serde(default = "default_btn_delete")]
+    pub btn_delete: String,
 }
 
 fn default_folders_title() -> String {
@@ -68,7 +94,43 @@ fn default_folder_empty() -> String {
     "Chưa có thư mục nào.".to_string()
 }
 fn default_folder_count() -> String {
-    "bài hát".to_string()
+    "bài".to_string()
+}
+fn default_th_no() -> String {
+    "#".to_string()
+}
+fn default_th_title() -> String {
+    "TÊN BÀI HÁT".to_string()
+}
+fn default_th_artist() -> String {
+    "CA SĨ".to_string()
+}
+fn default_th_status() -> String {
+    "TRẠNG THÁI".to_string()
+}
+fn default_th_folder() -> String {
+    "ĐƯỜNG DẪN THƯ MỤC".to_string()
+}
+fn default_th_count() -> String {
+    "SỐ BÀI".to_string()
+}
+fn default_th_action() -> String {
+    "THAO TÁC".to_string()
+}
+fn default_has_lyrics() -> String {
+    "Có lời".to_string()
+}
+fn default_no_lyrics_short() -> String {
+    "Không lời".to_string()
+}
+fn default_btn_add_folder() -> String {
+    "➕ Thêm Thư Mục [A]".to_string()
+}
+fn default_btn_rescan() -> String {
+    "🔄 Quét Lại [R]".to_string()
+}
+fn default_btn_delete() -> String {
+    "[Xóa]".to_string()
 }
 
 #[derive(Clone, Debug, Deserialize)]
@@ -164,18 +226,6 @@ impl Language {
         )
     }
 
-    /// Modal header title for the playlist.
-    #[allow(dead_code)]
-    pub fn playlist_title(self, count: usize) -> String {
-        format!(" {} ({})", self.config().playlist.title, count)
-    }
-
-    /// Modal header title for the folders manager.
-    #[allow(dead_code)]
-    pub fn folders_title(self, count: usize) -> String {
-        format!(" {} ({})", self.config().playlist.folders_title, count)
-    }
-
     /// Tracks tab label.
     pub fn tracks_tab(self) -> &'static str {
         &self.config().playlist.tracks_tab
@@ -221,6 +271,68 @@ impl Language {
         &self.config().playlist.folder_count
     }
 
+    /// Table header: No (#).
+    pub fn th_no(self) -> &'static str {
+        &self.config().playlist.th_no
+    }
+
+    /// Table header: Title.
+    pub fn th_title(self) -> &'static str {
+        &self.config().playlist.th_title
+    }
+
+    /// Table header: Artist.
+    pub fn th_artist(self) -> &'static str {
+        &self.config().playlist.th_artist
+    }
+
+    /// Table header: Status.
+    pub fn th_status(self) -> &'static str {
+        &self.config().playlist.th_status
+    }
+
+    /// Table header: Folder Path.
+    pub fn th_folder(self) -> &'static str {
+        &self.config().playlist.th_folder
+    }
+
+    /// Table header: Track Count.
+    pub fn th_count(self) -> &'static str {
+        &self.config().playlist.th_count
+    }
+
+    /// Table header: Action.
+    pub fn th_action(self) -> &'static str {
+        &self.config().playlist.th_action
+    }
+
+    /// Label: Has lyrics.
+    #[allow(dead_code)]
+    pub fn has_lyrics(self) -> &'static str {
+        &self.config().playlist.has_lyrics
+    }
+
+    /// Label: Instrumental / No lyrics.
+    #[allow(dead_code)]
+    pub fn no_lyrics_short(self) -> &'static str {
+        &self.config().playlist.no_lyrics_short
+    }
+
+    /// Button: Add folder.
+    pub fn btn_add_folder(self) -> &'static str {
+        &self.config().playlist.btn_add_folder
+    }
+
+    /// Button: Rescan folders.
+    pub fn btn_rescan(self) -> &'static str {
+        &self.config().playlist.btn_rescan
+    }
+
+    /// Button: Delete folder.
+    pub fn btn_delete(self) -> &'static str {
+        &self.config().playlist.btn_delete
+    }
+
     /// Live badge text inside playlist modal.
     pub fn live_badge(self) -> &'static str {
         &self.config().playlist.live_badge
@@ -264,8 +376,8 @@ mod tests {
         assert_eq!(Language::English.code(), "en");
         assert_eq!(Language::Vietnamese.name(), "Tiếng Việt");
         assert_eq!(Language::English.name(), "English");
-        assert!(Language::Vietnamese.playlist_title(3).contains("DANH SÁCH"));
-        assert!(Language::English.playlist_title(3).contains("PLAYLIST"));
+        assert_eq!(Language::Vietnamese.th_title(), "TÊN BÀI HÁT");
+        assert_eq!(Language::English.th_title(), "TRACK TITLE");
         assert!(Language::Vietnamese.no_lyrics_text().contains("không có lời"));
     }
 }

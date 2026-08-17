@@ -25,7 +25,19 @@
     "add_folder_prompt": "Nhập đường dẫn thư mục nhạc:",
     "add_folder_hints": "[Enter] Xác nhận lưu vào SQLite  •  [Esc] Hủy",
     "folder_empty": "Chưa có thư mục nào được cấu hình.",
-    "folder_count": "bài hát"
+    "folder_count": "bài",
+    "th_no": "#",
+    "th_title": "TÊN BÀI HÁT",
+    "th_artist": "CA SĨ",
+    "th_status": "TRẠNG THÁI",
+    "th_folder": "ĐƯỜNG DẪN THƯ MỤC",
+    "th_count": "SỐ BÀI",
+    "th_action": "THAO TÁC",
+    "has_lyrics": "Có lời",
+    "no_lyrics_short": "Không lời",
+    "btn_add_folder": "➕ Thêm Thư Mục [A]",
+    "btn_rescan": "🔄 Quét Lại [R]",
+    "btn_delete": "[Xóa]"
   },
   "player": {
     "no_lyrics": "♫ ♪ ♫  (Bài hát không có lời / Instrumental)  ♫ ♪ ♫",
