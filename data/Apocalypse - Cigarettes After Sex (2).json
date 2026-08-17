@@ -1,0 +1,1330 @@
+{
+    "data": {
+        "sentences": [
+            {
+                "words": [
+                    {
+                        "startTime": 34580,
+                        "endTime": 34600,
+                        "data": "You"
+                    },
+                    {
+                        "startTime": 34600,
+                        "endTime": 35380,
+                        "data": "leapt"
+                    },
+                    {
+                        "startTime": 35460,
+                        "endTime": 35560,
+                        "data": "from"
+                    },
+                    {
+                        "startTime": 35560,
+                        "endTime": 36020,
+                        "data": "crumbling"
+                    },
+                    {
+                        "startTime": 36020,
+                        "endTime": 36740,
+                        "data": "bridges"
+                    }
+                ]
+            },
+            {
+                "words": [
+                    {
+                        "startTime": 36740,
+                        "endTime": 37320,
+                        "data": "Watching"
+                    },
+                    {
+                        "startTime": 37440,
+                        "endTime": 38840,
+                        "data": "cityscapes"
+                    },
+                    {
+                        "startTime": 38880,
+                        "endTime": 39200,
+                        "data": "turn"
+                    },
+                    {
+                        "startTime": 39200,
+                        "endTime": 39760,
+                        "data": "to"
+                    },
+                    {
+                        "startTime": 39810,
+                        "endTime": 39990,
+                        "data": "dust"
+                    }
+                ]
+            },
+            {
+                "words": [
+                    {
+                        "startTime": 44640,
+                        "endTime": 44880,
+                        "data": "Filming"
+                    },
+                    {
+                        "startTime": 44880,
+                        "endTime": 46040,
+                        "data": "helicopters"
+                    }
+                ]
+            },
+            {
+                "words": [
+                    {
+                        "startTime": 46060,
+                        "endTime": 47160,
+                        "data": "Crashing"
+                    },
+                    {
+                        "startTime": 47160,
+                        "endTime": 47720,
+                        "data": "in"
+                    },
+                    {
+                        "startTime": 47720,
+                        "endTime": 47880,
+                        "data": "the"
+                    },
+                    {
+                        "startTime": 47880,
+                        "endTime": 48360,
+                        "data": "ocean"
+                    },
+                    {
+                        "startTime": 48360,
+                        "endTime": 48820,
+                        "data": "from"
+                    },
+                    {
+                        "startTime": 48820,
+                        "endTime": 49580,
+                        "data": "way"
+                    },
+                    {
+                        "startTime": 49630,
+                        "endTime": 49810,
+                        "data": "above"
+                    }
+                ]
+            },
+            {
+                "words": [
+                    {
+                        "startTime": 55280,
+                        "endTime": 55460,
+                        "data": "Got"
+                    },
+                    {
+                        "startTime": 55460,
+                        "endTime": 55600,
+                        "data": "the"
+                    },
+                    {
+                        "startTime": 55600,
+                        "endTime": 56180,
+                        "data": "music"
+                    },
+                    {
+                        "startTime": 56180,
+                        "endTime": 56740,
+                        "data": "in"
+                    },
+                    {
+                        "startTime": 56740,
+                        "endTime": 57100,
+                        "data": "you,"
+                    },
+                    {
+                        "startTime": 57400,
+                        "endTime": 57580,
+                        "data": "baby"
+                    }
+                ]
+            },
+            {
+                "words": [
+                    {
+                        "startTime": 57440,
+                        "endTime": 57880,
+                        "data": "Tell"
+                    },
+                    {
+                        "startTime": 57880,
+                        "endTime": 58180,
+                        "data": "me"
+                    },
+                    {
+                        "startTime": 58180,
+                        "endTime": 58700,
+                        "data": "why"
+                    }
+                ]
+            },
+            {
+                "words": [
+                    {
+                        "startTime": 60280,
+                        "endTime": 60460,
+                        "data": "Got"
+                    },
+                    {
+                        "startTime": 60640,
+                        "endTime": 60820,
+                        "data": "the"
+                    },
+                    {
+                        "startTime": 60840,
+                        "endTime": 61340,
+                        "data": "music"
+                    },
+                    {
+                        "startTime": 61380,
+                        "endTime": 61880,
+                        "data": "in"
+                    },
+                    {
+                        "startTime": 61880,
+                        "endTime": 62080,
+                        "data": "you,"
+                    },
+                    {
+                        "startTime": 62620,
+                        "endTime": 62800,
+                        "data": "baby"
+                    }
+                ]
+            },
+            {
+                "words": [
+                    {
+                        "startTime": 62620,
+                        "endTime": 63040,
+                        "data": "Tell"
+                    },
+                    {
+                        "startTime": 63040,
+                        "endTime": 63340,
+                        "data": "me"
+                    },
+                    {
+                        "startTime": 63340,
+                        "endTime": 64160,
+                        "data": "why"
+                    }
+                ]
+            },
+            {
+                "words": [
+                    {
+                        "startTime": 65420,
+                        "endTime": 65800,
+                        "data": "You've"
+                    },
+                    {
+                        "startTime": 65800,
+                        "endTime": 65960,
+                        "data": "been"
+                    },
+                    {
+                        "startTime": 65960,
+                        "endTime": 66340,
+                        "data": "locked"
+                    },
+                    {
+                        "startTime": 66340,
+                        "endTime": 66700,
+                        "data": "in"
+                    },
+                    {
+                        "startTime": 66700,
+                        "endTime": 66880,
+                        "data": "here"
+                    },
+                    {
+                        "startTime": 66880,
+                        "endTime": 67580,
+                        "data": "forever"
+                    }
+                ]
+            },
+            {
+                "words": [
+                    {
+                        "startTime": 67580,
+                        "endTime": 68360,
+                        "data": "And"
+                    },
+                    {
+                        "startTime": 68360,
+                        "endTime": 68500,
+                        "data": "you"
+                    },
+                    {
+                        "startTime": 68500,
+                        "endTime": 69160,
+                        "data": "just"
+                    },
+                    {
+                        "startTime": 69300,
+                        "endTime": 69920,
+                        "data": "can't"
+                    },
+                    {
+                        "startTime": 69920,
+                        "endTime": 70160,
+                        "data": "say"
+                    },
+                    {
+                        "startTime": 70210,
+                        "endTime": 70390,
+                        "data": "goodbye"
+                    }
+                ]
+            },
+            {
+                "words": [
+                    {
+                        "startTime": 76480,
+                        "endTime": 76980,
+                        "data": "Kisses"
+                    },
+                    {
+                        "startTime": 76980,
+                        "endTime": 77200,
+                        "data": "on"
+                    },
+                    {
+                        "startTime": 77200,
+                        "endTime": 77440,
+                        "data": "the"
+                    },
+                    {
+                        "startTime": 77510,
+                        "endTime": 78360,
+                        "data": "foreheads"
+                    }
+                ]
+            },
+            {
+                "words": [
+                    {
+                        "startTime": 78360,
+                        "endTime": 78620,
+                        "data": "Of"
+                    },
+                    {
+                        "startTime": 78640,
+                        "endTime": 78760,
+                        "data": "the"
+                    },
+                    {
+                        "startTime": 78760,
+                        "endTime": 79320,
+                        "data": "lovers"
+                    },
+                    {
+                        "startTime": 79320,
+                        "endTime": 79860,
+                        "data": "wrapped"
+                    },
+                    {
+                        "startTime": 79860,
+                        "endTime": 80460,
+                        "data": "in"
+                    },
+                    {
+                        "startTime": 80460,
+                        "endTime": 80800,
+                        "data": "your"
+                    },
+                    {
+                        "startTime": 80850,
+                        "endTime": 81030,
+                        "data": "arms"
+                    }
+                ]
+            },
+            {
+                "words": [
+                    {
+                        "startTime": 85940,
+                        "endTime": 86040,
+                        "data": "You've"
+                    },
+                    {
+                        "startTime": 86040,
+                        "endTime": 86180,
+                        "data": "been"
+                    },
+                    {
+                        "startTime": 86180,
+                        "endTime": 87060,
+                        "data": "hiding"
+                    },
+                    {
+                        "startTime": 87060,
+                        "endTime": 87580,
+                        "data": "them"
+                    }
+                ]
+            },
+            {
+                "words": [
+                    {
+                        "startTime": 87580,
+                        "endTime": 87900,
+                        "data": "In"
+                    },
+                    {
+                        "startTime": 87940,
+                        "endTime": 88660,
+                        "data": "hollowed"
+                    },
+                    {
+                        "startTime": 88660,
+                        "endTime": 88780,
+                        "data": "out"
+                    },
+                    {
+                        "startTime": 88780,
+                        "endTime": 89760,
+                        "data": "pianos"
+                    },
+                    {
+                        "startTime": 89760,
+                        "endTime": 90140,
+                        "data": "left"
+                    },
+                    {
+                        "startTime": 90140,
+                        "endTime": 90700,
+                        "data": "in"
+                    },
+                    {
+                        "startTime": 90700,
+                        "endTime": 91180,
+                        "data": "the"
+                    },
+                    {
+                        "startTime": 91230,
+                        "endTime": 91410,
+                        "data": "dark"
+                    }
+                ]
+            },
+            {
+                "words": [
+                    {
+                        "startTime": 96380,
+                        "endTime": 96560,
+                        "data": "Got"
+                    },
+                    {
+                        "startTime": 96560,
+                        "endTime": 96680,
+                        "data": "the"
+                    },
+                    {
+                        "startTime": 96680,
+                        "endTime": 97280,
+                        "data": "music"
+                    },
+                    {
+                        "startTime": 97280,
+                        "endTime": 97780,
+                        "data": "in"
+                    },
+                    {
+                        "startTime": 97780,
+                        "endTime": 98200,
+                        "data": "you,"
+                    },
+                    {
+                        "startTime": 98520,
+                        "endTime": 98700,
+                        "data": "baby"
+                    }
+                ]
+            },
+            {
+                "words": [
+                    {
+                        "startTime": 98520,
+                        "endTime": 98940,
+                        "data": "Tell"
+                    },
+                    {
+                        "startTime": 98940,
+                        "endTime": 99240,
+                        "data": "me"
+                    },
+                    {
+                        "startTime": 99240,
+                        "endTime": 99900,
+                        "data": "why"
+                    }
+                ]
+            },
+            {
+                "words": [
+                    {
+                        "startTime": 101380,
+                        "endTime": 101480,
+                        "data": "Got"
+                    },
+                    {
+                        "startTime": 101480,
+                        "endTime": 101800,
+                        "data": "the"
+                    },
+                    {
+                        "startTime": 101800,
+                        "endTime": 102380,
+                        "data": "music"
+                    },
+                    {
+                        "startTime": 102380,
+                        "endTime": 102920,
+                        "data": "in"
+                    },
+                    {
+                        "startTime": 102920,
+                        "endTime": 103300,
+                        "data": "you,"
+                    },
+                    {
+                        "startTime": 103640,
+                        "endTime": 103820,
+                        "data": "baby"
+                    }
+                ]
+            },
+            {
+                "words": [
+                    {
+                        "startTime": 103640,
+                        "endTime": 104060,
+                        "data": "Tell"
+                    },
+                    {
+                        "startTime": 104060,
+                        "endTime": 104340,
+                        "data": "me"
+                    },
+                    {
+                        "startTime": 104340,
+                        "endTime": 105120,
+                        "data": "why"
+                    }
+                ]
+            },
+            {
+                "words": [
+                    {
+                        "startTime": 106380,
+                        "endTime": 106740,
+                        "data": "You've"
+                    },
+                    {
+                        "startTime": 106740,
+                        "endTime": 106860,
+                        "data": "been"
+                    },
+                    {
+                        "startTime": 106860,
+                        "endTime": 107260,
+                        "data": "locked"
+                    },
+                    {
+                        "startTime": 107260,
+                        "endTime": 107560,
+                        "data": "in"
+                    },
+                    {
+                        "startTime": 107560,
+                        "endTime": 107840,
+                        "data": "here"
+                    },
+                    {
+                        "startTime": 107850,
+                        "endTime": 108700,
+                        "data": "forever"
+                    }
+                ]
+            },
+            {
+                "words": [
+                    {
+                        "startTime": 109200,
+                        "endTime": 109300,
+                        "data": "And"
+                    },
+                    {
+                        "startTime": 109300,
+                        "endTime": 109400,
+                        "data": "you"
+                    },
+                    {
+                        "startTime": 109400,
+                        "endTime": 109840,
+                        "data": "just"
+                    },
+                    {
+                        "startTime": 109840,
+                        "endTime": 110660,
+                        "data": "can't"
+                    },
+                    {
+                        "startTime": 110680,
+                        "endTime": 111020,
+                        "data": "say"
+                    },
+                    {
+                        "startTime": 111070,
+                        "endTime": 111290,
+                        "data": "goodbye"
+                    }
+                ]
+            },
+            {
+                "words": [
+                    {
+                        "startTime": 118340,
+                        "endTime": 118520,
+                        "data": "Your"
+                    },
+                    {
+                        "startTime": 118520,
+                        "endTime": 118820,
+                        "data": "lips,"
+                    },
+                    {
+                        "startTime": 119000,
+                        "endTime": 119180,
+                        "data": "my"
+                    },
+                    {
+                        "startTime": 119180,
+                        "endTime": 119550,
+                        "data": "lips"
+                    }
+                ]
+            },
+            {
+                "words": [
+                    {
+                        "startTime": 128380,
+                        "endTime": 128580,
+                        "data": "Apocalypse"
+                    }
+                ]
+            },
+            {
+                "words": [
+                    {
+                        "startTime": 128580,
+                        "endTime": 128760,
+                        "data": "Your"
+                    },
+                    {
+                        "startTime": 128760,
+                        "endTime": 128980,
+                        "data": "lips,"
+                    },
+                    {
+                        "startTime": 129220,
+                        "endTime": 129400,
+                        "data": "my"
+                    },
+                    {
+                        "startTime": 129400,
+                        "endTime": 129720,
+                        "data": "lips"
+                    }
+                ]
+            },
+            {
+                "words": [
+                    {
+                        "startTime": 136940,
+                        "endTime": 137120,
+                        "data": "Apocalypse"
+                    }
+                ]
+            },
+            {
+                "words": [
+                    {
+                        "startTime": 137120,
+                        "endTime": 137300,
+                        "data": "Go"
+                    },
+                    {
+                        "startTime": 137300,
+                        "endTime": 137380,
+                        "data": "and"
+                    },
+                    {
+                        "startTime": 137380,
+                        "endTime": 137680,
+                        "data": "sneak"
+                    },
+                    {
+                        "startTime": 137680,
+                        "endTime": 138060,
+                        "data": "us"
+                    },
+                    {
+                        "startTime": 138060,
+                        "endTime": 138380,
+                        "data": "through"
+                    },
+                    {
+                        "startTime": 138380,
+                        "endTime": 138780,
+                        "data": "the"
+                    },
+                    {
+                        "startTime": 138780,
+                        "endTime": 139200,
+                        "data": "rivers"
+                    }
+                ]
+            },
+            {
+                "words": [
+                    {
+                        "startTime": 139200,
+                        "endTime": 139840,
+                        "data": "Flood"
+                    },
+                    {
+                        "startTime": 139840,
+                        "endTime": 140040,
+                        "data": "is"
+                    },
+                    {
+                        "startTime": 140040,
+                        "endTime": 140560,
+                        "data": "rising"
+                    },
+                    {
+                        "startTime": 140560,
+                        "endTime": 141040,
+                        "data": "up"
+                    },
+                    {
+                        "startTime": 141408,
+                        "endTime": 141600,
+                        "data": "on"
+                    },
+                    {
+                        "startTime": 141600,
+                        "endTime": 142000,
+                        "data": "your"
+                    },
+                    {
+                        "startTime": 142310,
+                        "endTime": 143360,
+                        "data": "knees"
+                    }
+                ]
+            },
+            {
+                "words": [
+                    {
+                        "startTime": 143360,
+                        "endTime": 143540,
+                        "data": "Oh,"
+                    },
+                    {
+                        "startTime": 143590,
+                        "endTime": 144070,
+                        "data": "please"
+                    }
+                ]
+            },
+            {
+                "words": [
+                    {
+                        "startTime": 147050,
+                        "endTime": 148100,
+                        "data": "Come"
+                    },
+                    {
+                        "startTime": 148100,
+                        "endTime": 148500,
+                        "data": "out"
+                    },
+                    {
+                        "startTime": 148840,
+                        "endTime": 148940,
+                        "data": "and"
+                    },
+                    {
+                        "startTime": 148940,
+                        "endTime": 149520,
+                        "data": "haunt"
+                    },
+                    {
+                        "startTime": 149520,
+                        "endTime": 149840,
+                        "data": "me"
+                    }
+                ]
+            },
+            {
+                "words": [
+                    {
+                        "startTime": 150420,
+                        "endTime": 150600,
+                        "data": "I"
+                    },
+                    {
+                        "startTime": 150600,
+                        "endTime": 150860,
+                        "data": "know"
+                    },
+                    {
+                        "startTime": 150860,
+                        "endTime": 151280,
+                        "data": "you"
+                    },
+                    {
+                        "startTime": 151280,
+                        "endTime": 151780,
+                        "data": "want"
+                    },
+                    {
+                        "startTime": 151780,
+                        "endTime": 152260,
+                        "data": "me"
+                    }
+                ]
+            },
+            {
+                "words": [
+                    {
+                        "startTime": 152960,
+                        "endTime": 153140,
+                        "data": "Come"
+                    },
+                    {
+                        "startTime": 153140,
+                        "endTime": 153540,
+                        "data": "out"
+                    },
+                    {
+                        "startTime": 153540,
+                        "endTime": 153960,
+                        "data": "and"
+                    },
+                    {
+                        "startTime": 153960,
+                        "endTime": 154520,
+                        "data": "haunt"
+                    },
+                    {
+                        "startTime": 154620,
+                        "endTime": 155360,
+                        "data": "me"
+                    }
+                ]
+            },
+            {
+                "words": [
+                    {
+                        "startTime": 157380,
+                        "endTime": 158100,
+                        "data": "Sharing"
+                    },
+                    {
+                        "startTime": 158100,
+                        "endTime": 158620,
+                        "data": "all"
+                    },
+                    {
+                        "startTime": 158620,
+                        "endTime": 158860,
+                        "data": "your"
+                    },
+                    {
+                        "startTime": 158860,
+                        "endTime": 159420,
+                        "data": "secrets"
+                    },
+                    {
+                        "startTime": 159420,
+                        "endTime": 159780,
+                        "data": "with"
+                    },
+                    {
+                        "startTime": 159780,
+                        "endTime": 160280,
+                        "data": "each"
+                    },
+                    {
+                        "startTime": 160280,
+                        "endTime": 160620,
+                        "data": "other"
+                    }
+                ]
+            },
+            {
+                "words": [
+                    {
+                        "startTime": 160620,
+                        "endTime": 161220,
+                        "data": "Since"
+                    },
+                    {
+                        "startTime": 161220,
+                        "endTime": 161780,
+                        "data": "you"
+                    },
+                    {
+                        "startTime": 161780,
+                        "endTime": 162120,
+                        "data": "were"
+                    },
+                    {
+                        "startTime": 162170,
+                        "endTime": 162646,
+                        "data": "kids"
+                    }
+                ]
+            },
+            {
+                "words": [
+                    {
+                        "startTime": 167260,
+                        "endTime": 167440,
+                        "data": "Sleeping"
+                    },
+                    {
+                        "startTime": 167440,
+                        "endTime": 168380,
+                        "data": "soundly"
+                    },
+                    {
+                        "startTime": 168380,
+                        "endTime": 168560,
+                        "data": "with"
+                    },
+                    {
+                        "startTime": 168560,
+                        "endTime": 168960,
+                        "data": "the"
+                    },
+                    {
+                        "startTime": 168960,
+                        "endTime": 169580,
+                        "data": "locket"
+                    }
+                ]
+            },
+            {
+                "words": [
+                    {
+                        "startTime": 169940,
+                        "endTime": 170060,
+                        "data": "That"
+                    },
+                    {
+                        "startTime": 170060,
+                        "endTime": 170140,
+                        "data": "she"
+                    },
+                    {
+                        "startTime": 170140,
+                        "endTime": 170480,
+                        "data": "gave"
+                    },
+                    {
+                        "startTime": 170480,
+                        "endTime": 170820,
+                        "data": "you"
+                    },
+                    {
+                        "startTime": 170830,
+                        "endTime": 171680,
+                        "data": "clutched"
+                    },
+                    {
+                        "startTime": 171680,
+                        "endTime": 171800,
+                        "data": "in"
+                    },
+                    {
+                        "startTime": 171800,
+                        "endTime": 172200,
+                        "data": "your"
+                    },
+                    {
+                        "startTime": 172250,
+                        "endTime": 172430,
+                        "data": "fist"
+                    }
+                ]
+            },
+            {
+                "words": [
+                    {
+                        "startTime": 177420,
+                        "endTime": 177600,
+                        "data": "Got"
+                    },
+                    {
+                        "startTime": 177600,
+                        "endTime": 177720,
+                        "data": "the"
+                    },
+                    {
+                        "startTime": 177720,
+                        "endTime": 178280,
+                        "data": "music"
+                    },
+                    {
+                        "startTime": 178280,
+                        "endTime": 178760,
+                        "data": "in"
+                    },
+                    {
+                        "startTime": 178760,
+                        "endTime": 179240,
+                        "data": "you,"
+                    },
+                    {
+                        "startTime": 179560,
+                        "endTime": 179740,
+                        "data": "baby"
+                    }
+                ]
+            },
+            {
+                "words": [
+                    {
+                        "startTime": 179580,
+                        "endTime": 180000,
+                        "data": "Tell"
+                    },
+                    {
+                        "startTime": 180000,
+                        "endTime": 180260,
+                        "data": "me"
+                    },
+                    {
+                        "startTime": 180260,
+                        "endTime": 180740,
+                        "data": "why"
+                    }
+                ]
+            },
+            {
+                "words": [
+                    {
+                        "startTime": 182340,
+                        "endTime": 182440,
+                        "data": "Got"
+                    },
+                    {
+                        "startTime": 182440,
+                        "endTime": 182760,
+                        "data": "the"
+                    },
+                    {
+                        "startTime": 182760,
+                        "endTime": 183340,
+                        "data": "music"
+                    },
+                    {
+                        "startTime": 183340,
+                        "endTime": 183860,
+                        "data": "in"
+                    },
+                    {
+                        "startTime": 183860,
+                        "endTime": 184220,
+                        "data": "you,"
+                    },
+                    {
+                        "startTime": 184400,
+                        "endTime": 184580,
+                        "data": "baby"
+                    }
+                ]
+            },
+            {
+                "words": [
+                    {
+                        "startTime": 184400,
+                        "endTime": 185020,
+                        "data": "Tell"
+                    },
+                    {
+                        "startTime": 185020,
+                        "endTime": 185280,
+                        "data": "me"
+                    },
+                    {
+                        "startTime": 185280,
+                        "endTime": 186080,
+                        "data": "why"
+                    }
+                ]
+            },
+            {
+                "words": [
+                    {
+                        "startTime": 187300,
+                        "endTime": 187680,
+                        "data": "You've"
+                    },
+                    {
+                        "startTime": 187680,
+                        "endTime": 187780,
+                        "data": "been"
+                    },
+                    {
+                        "startTime": 187780,
+                        "endTime": 188220,
+                        "data": "locked"
+                    },
+                    {
+                        "startTime": 188300,
+                        "endTime": 188480,
+                        "data": "in"
+                    },
+                    {
+                        "startTime": 188480,
+                        "endTime": 188720,
+                        "data": "here"
+                    },
+                    {
+                        "startTime": 188720,
+                        "endTime": 189560,
+                        "data": "forever"
+                    }
+                ]
+            },
+            {
+                "words": [
+                    {
+                        "startTime": 189560,
+                        "endTime": 190180,
+                        "data": "And"
+                    },
+                    {
+                        "startTime": 190180,
+                        "endTime": 190280,
+                        "data": "you"
+                    },
+                    {
+                        "startTime": 190280,
+                        "endTime": 190700,
+                        "data": "just"
+                    },
+                    {
+                        "startTime": 190700,
+                        "endTime": 191460,
+                        "data": "can't"
+                    },
+                    {
+                        "startTime": 191460,
+                        "endTime": 191960,
+                        "data": "say"
+                    },
+                    {
+                        "startTime": 191960,
+                        "endTime": 192840,
+                        "data": "goodbye"
+                    }
+                ]
+            },
+            {
+                "words": [
+                    {
+                        "startTime": 194490,
+                        "endTime": 195140,
+                        "data": "You've"
+                    },
+                    {
+                        "startTime": 195140,
+                        "endTime": 195320,
+                        "data": "been"
+                    },
+                    {
+                        "startTime": 195320,
+                        "endTime": 195500,
+                        "data": "locked"
+                    },
+                    {
+                        "startTime": 195500,
+                        "endTime": 195680,
+                        "data": "in"
+                    },
+                    {
+                        "startTime": 195680,
+                        "endTime": 195860,
+                        "data": "here"
+                    },
+                    {
+                        "startTime": 195860,
+                        "endTime": 196040,
+                        "data": "forever"
+                    }
+                ]
+            },
+            {
+                "words": [
+                    {
+                        "startTime": 195140,
+                        "endTime": 195320,
+                        "data": "And"
+                    },
+                    {
+                        "startTime": 195320,
+                        "endTime": 195500,
+                        "data": "you"
+                    },
+                    {
+                        "startTime": 195500,
+                        "endTime": 195680,
+                        "data": "just"
+                    },
+                    {
+                        "startTime": 195680,
+                        "endTime": 195860,
+                        "data": "can't"
+                    },
+                    {
+                        "startTime": 195860,
+                        "endTime": 196040,
+                        "data": "say"
+                    },
+                    {
+                        "startTime": 196040,
+                        "endTime": 196220,
+                        "data": "goodbye"
+                    }
+                ]
+            },
+            {
+                "words": [
+                    {
+                        "startTime": 207280,
+                        "endTime": 207780,
+                        "data": "Oh,"
+                    },
+                    {
+                        "startTime": 207780,
+                        "endTime": 207960,
+                        "data": "when"
+                    },
+                    {
+                        "startTime": 207960,
+                        "endTime": 209080,
+                        "data": "you're"
+                    },
+                    {
+                        "startTime": 209080,
+                        "endTime": 209260,
+                        "data": "all"
+                    },
+                    {
+                        "startTime": 209260,
+                        "endTime": 209440,
+                        "data": "alone"
+                    }
+                ]
+            },
+            {
+                "words": [
+                    {
+                        "startTime": 209080,
+                        "endTime": 209260,
+                        "data": "I"
+                    },
+                    {
+                        "startTime": 209260,
+                        "endTime": 209440,
+                        "data": "will"
+                    },
+                    {
+                        "startTime": 209440,
+                        "endTime": 209620,
+                        "data": "reach"
+                    },
+                    {
+                        "startTime": 209620,
+                        "endTime": 209800,
+                        "data": "for"
+                    },
+                    {
+                        "startTime": 209800,
+                        "endTime": 210260,
+                        "data": "you"
+                    }
+                ]
+            },
+            {
+                "words": [
+                    {
+                        "startTime": 210260,
+                        "endTime": 211440,
+                        "data": "When"
+                    },
+                    {
+                        "startTime": 211440,
+                        "endTime": 212340,
+                        "data": "you're"
+                    },
+                    {
+                        "startTime": 212340,
+                        "endTime": 212520,
+                        "data": "feeling"
+                    },
+                    {
+                        "startTime": 212520,
+                        "endTime": 213000,
+                        "data": "low"
+                    }
+                ]
+            },
+            {
+                "words": [
+                    {
+                        "startTime": 237184,
+                        "endTime": 237920,
+                        "data": "I"
+                    },
+                    {
+                        "startTime": 237920,
+                        "endTime": 238240,
+                        "data": "will"
+                    },
+                    {
+                        "startTime": 238290,
+                        "endTime": 239040,
+                        "data": "be"
+                    },
+                    {
+                        "startTime": 239090,
+                        "endTime": 239840,
+                        "data": "there"
+                    },
+                    {
+                        "startTime": 239890,
+                        "endTime": 240530,
+                        "data": "too"
+                    }
+                ]
+            }
+        ]
+    }
+}
