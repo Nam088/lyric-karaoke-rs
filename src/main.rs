@@ -1,4 +1,4 @@
-//! Terminal karaoke player with SQLite music library.
+//! Terminal karaoke player with SQLite music folders manager.
 
 mod analysis;
 mod audio;
@@ -45,33 +45,35 @@ fn main() -> Result<()> {
 }
 
 fn load() -> Result<Arc<Session>> {
-    // Determine the music directory: from CLI arg or default to config::DATA_DIR
     let args: Vec<String> = std::env::args().collect();
-    let mut music_dir = PathBuf::from(config::DATA_DIR);
+    let mut custom_dir: Option<PathBuf> = None;
     let mut i = 1;
     while i < args.len() {
         if args[i] == "--frame" {
             i += 2;
         } else if !args[i].starts_with('-') {
-            music_dir = PathBuf::from(&args[i]);
+            custom_dir = Some(PathBuf::from(&args[i]));
             break;
         } else {
             i += 1;
         }
     }
 
-    let db_path = if music_dir.is_dir() {
-        music_dir.join("library.db")
-    } else {
-        PathBuf::from(config::DATA_DIR).join("library.db")
-    };
+    let _ = std::fs::create_dir_all(config::DATA_DIR);
+    let db_path = PathBuf::from(config::DATA_DIR).join("library.db");
 
-    // Open SQLite database and auto-scan the folder
+    // Open SQLite database to manage allowed music folders
     let conn = Connection::open(&db_path)
         .with_context(|| format!("opening SQLite database at {}", db_path.display()))?;
-    
-    let scanned_tracks = db::scan_and_sync_folder(&conn, &music_dir)
-        .with_context(|| format!("scanning music directory at {}", music_dir.display()))?;
+
+    db::init_db(&conn)?;
+
+    if let Some(dir) = custom_dir {
+        db::add_folder(&conn, &dir)?;
+    }
+
+    // Dynamically scan all allowed folders in DB to build playlist
+    let scanned_tracks = db::load_all_tracks_from_db_folders(&conn)?;
 
     let playlist = if !scanned_tracks.is_empty() {
         Playlist {

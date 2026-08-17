@@ -1,4 +1,4 @@
-//! SQLite database management and music directory auto-discovery.
+//! SQLite database management for configured music folders and dynamic scanning.
 
 use std::path::{Path, PathBuf};
 use std::time::{SystemTime, UNIX_EPOCH};
@@ -40,41 +40,71 @@ pub fn parse_title_and_artist(file_stem: &str) -> (String, String) {
     (clean, "Unknown Artist".to_string())
 }
 
-/// Initialize SQLite schema for the music library.
+/// Initialize SQLite schema for managing allowed/configured music folders.
 pub fn init_db(conn: &Connection) -> Result<()> {
     conn.execute_batch(
-        "CREATE TABLE IF NOT EXISTS songs (
-            id TEXT PRIMARY KEY,
-            title TEXT NOT NULL,
-            artist TEXT NOT NULL,
-            audio_path TEXT NOT NULL UNIQUE,
-            lyrics_path TEXT,
-            duration_ms INTEGER DEFAULT 0,
-            updated_at INTEGER NOT NULL
-        );
-        CREATE INDEX IF NOT EXISTS idx_songs_audio_path ON songs(audio_path);
-        CREATE INDEX IF NOT EXISTS idx_songs_title ON songs(title);",
+        "CREATE TABLE IF NOT EXISTS folders (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            path TEXT NOT NULL UNIQUE,
+            enabled BOOLEAN NOT NULL DEFAULT 1,
+            created_at INTEGER NOT NULL
+        );",
     )
-    .context("initializing sqlite songs table")?;
+    .context("initializing sqlite folders table")?;
+
+    // Seed default "data" folder if the table is currently empty
+    let count: i64 = conn.query_row("SELECT COUNT(*) FROM folders", [], |r| r.get(0))?;
+    if count == 0 {
+        add_folder(conn, "data")?;
+    }
+
     Ok(())
 }
 
-/// Scan a folder for audio files, detect matching lyrics (if any),
-/// upsert into the SQLite database, and return the updated library.
-pub fn scan_and_sync_folder(conn: &Connection, folder: impl AsRef<Path>) -> Result<Vec<Track>> {
-    init_db(conn)?;
-
-    let folder = folder.as_ref();
-    if !folder.exists() || !folder.is_dir() {
-        return Ok(Vec::new());
-    }
-
+/// Add an allowed music folder to the SQLite database.
+pub fn add_folder(conn: &Connection, folder_path: impl AsRef<Path>) -> Result<()> {
+    let path_str = folder_path.as_ref().to_string_lossy().to_string();
     let now_ts = SystemTime::now()
         .duration_since(UNIX_EPOCH)
         .unwrap_or_default()
         .as_secs() as i64;
 
-    // Check if a playlist.json exists in the folder for predefined rich metadata
+    conn.execute(
+        "INSERT INTO folders (path, enabled, created_at)
+         VALUES (?1, 1, ?2)
+         ON CONFLICT(path) DO UPDATE SET enabled = 1",
+        params![path_str, now_ts],
+    )?;
+
+    Ok(())
+}
+
+/// List all enabled music folders configured in SQLite.
+pub fn list_folders(conn: &Connection) -> Result<Vec<PathBuf>> {
+    init_db(conn)?;
+
+    let mut stmt = conn.prepare("SELECT path FROM folders WHERE enabled = 1 ORDER BY id ASC")?;
+    let folder_rows = stmt.query_map([], |row| {
+        let path_str: String = row.get(0)?;
+        Ok(PathBuf::from(path_str))
+    })?;
+
+    let mut folders = Vec::new();
+    for f in folder_rows.flatten() {
+        folders.push(f);
+    }
+    Ok(folders)
+}
+
+/// Scan a single folder on disk dynamically for audio files.
+/// Does NOT write songs to DB; directly builds in-memory Track list.
+pub fn scan_folder_for_tracks(folder: impl AsRef<Path>) -> Result<Vec<Track>> {
+    let folder = folder.as_ref();
+    if !folder.exists() || !folder.is_dir() {
+        return Ok(Vec::new());
+    }
+
+    // Check if playlist.json exists in this folder for optional predefined metadata
     let playlist_manifest = folder.join("playlist.json");
     let predefined_tracks: Vec<Track> = if playlist_manifest.exists() {
         std::fs::read_to_string(&playlist_manifest)
@@ -88,7 +118,7 @@ pub fn scan_and_sync_folder(conn: &Connection, folder: impl AsRef<Path>) -> Resu
     let entries = std::fs::read_dir(folder)
         .with_context(|| format!("reading directory {}", folder.display()))?;
 
-    let tx = conn.unchecked_transaction()?;
+    let mut tracks = Vec::new();
 
     for entry in entries.flatten() {
         let path = entry.path();
@@ -128,7 +158,7 @@ pub fn scan_and_sync_folder(conn: &Connection, folder: impl AsRef<Path>) -> Resu
             (t, a, safe_id)
         };
 
-        // Detect matching lyrics file
+        // Detect matching lyrics file in the same folder (.json or .lrc)
         let json_lyric = folder.join(format!("{}.json", stem));
         let lrc_lyric = folder.join(format!("{}.lrc", stem));
 
@@ -140,64 +170,46 @@ pub fn scan_and_sync_folder(conn: &Connection, folder: impl AsRef<Path>) -> Resu
                     folder.join(&p.lyrics)
                 };
                 if candidate.exists() {
-                    Some(candidate.to_string_lossy().to_string())
+                    candidate.to_string_lossy().to_string()
                 } else {
-                    None
+                    String::new()
                 }
             } else {
-                None
+                String::new()
             }
         } else if json_lyric.exists() {
-            Some(json_lyric.to_string_lossy().to_string())
+            json_lyric.to_string_lossy().to_string()
         } else if lrc_lyric.exists() {
-            Some(lrc_lyric.to_string_lossy().to_string())
+            lrc_lyric.to_string_lossy().to_string()
         } else {
-            None
+            String::new()
         };
 
-        let audio_path_str = path.to_string_lossy().to_string();
-
-        tx.execute(
-            "INSERT INTO songs (id, title, artist, audio_path, lyrics_path, updated_at)
-             VALUES (?1, ?2, ?3, ?4, ?5, ?6)
-             ON CONFLICT(audio_path) DO UPDATE SET
-                 title = excluded.title,
-                 artist = excluded.artist,
-                 lyrics_path = COALESCE(excluded.lyrics_path, songs.lyrics_path),
-                 updated_at = excluded.updated_at",
-            params![id, title, artist, audio_path_str, lyrics_path, now_ts],
-        )?;
-    }
-
-    tx.commit()?;
-
-    // Fetch all tracks from SQLite database
-    let mut stmt = conn.prepare(
-        "SELECT id, title, artist, audio_path, lyrics_path FROM songs ORDER BY title ASC",
-    )?;
-
-    let track_rows = stmt.query_map([], |row| {
-        let id: String = row.get(0)?;
-        let title: String = row.get(1)?;
-        let artist: String = row.get(2)?;
-        let audio: String = row.get(3)?;
-        let lyrics: Option<String> = row.get(4)?;
-
-        Ok(Track {
+        tracks.push(Track {
             id,
             title,
             artist,
-            audio,
-            lyrics: lyrics.unwrap_or_default(),
-        })
-    })?;
-
-    let mut tracks = Vec::new();
-    for track in track_rows.flatten() {
-        tracks.push(track);
+            audio: path.to_string_lossy().to_string(),
+            lyrics: lyrics_path,
+        });
     }
 
+    tracks.sort_by(|a, b| a.title.cmp(&b.title));
     Ok(tracks)
+}
+
+/// Read all configured folders from SQLite and dynamically scan each to load the complete playlist.
+pub fn load_all_tracks_from_db_folders(conn: &Connection) -> Result<Vec<Track>> {
+    let folders = list_folders(conn)?;
+    let mut all_tracks = Vec::new();
+
+    for folder in folders {
+        if let Ok(mut tracks) = scan_folder_for_tracks(&folder) {
+            all_tracks.append(&mut tracks);
+        }
+    }
+
+    Ok(all_tracks)
 }
 
 #[cfg(test)]
@@ -224,11 +236,11 @@ mod tests {
     }
 
     #[test]
-    fn sqlite_database_scan_and_sync() {
+    fn sqlite_manage_folders_and_dynamic_scan() {
         let conn = Connection::open_in_memory().unwrap();
         init_db(&conn).unwrap();
 
-        let temp_dir = std::env::temp_dir().join("karaoke_test_scan");
+        let temp_dir = std::env::temp_dir().join("karaoke_test_folder_mgr");
         let _ = std::fs::create_dir_all(&temp_dir);
 
         let song1 = temp_dir.join("Singer - Test Song.mp3");
@@ -236,8 +248,13 @@ mod tests {
         std::fs::write(&song1, b"dummy audio").unwrap();
         std::fs::write(&song2, b"dummy audio").unwrap();
 
-        let tracks = scan_and_sync_folder(&conn, &temp_dir).unwrap();
-        assert_eq!(tracks.len(), 2);
+        // Add custom folder to SQLite
+        add_folder(&conn, &temp_dir).unwrap();
+
+        let folders = list_folders(&conn).unwrap();
+        assert!(folders.contains(&temp_dir));
+
+        let tracks = load_all_tracks_from_db_folders(&conn).unwrap();
         assert!(tracks.iter().any(|t| t.title == "Test Song" && t.artist == "Singer"));
         assert!(tracks.iter().any(|t| t.title == "Instrumental Track" && t.lyrics.is_empty()));
 
