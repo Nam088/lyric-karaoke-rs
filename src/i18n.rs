@@ -25,6 +25,12 @@ pub struct PlaylistLocale {
 }
 
 #[derive(Clone, Debug, Deserialize)]
+pub struct PlayerLocale {
+    pub no_lyrics: String,
+    pub no_lyrics_hints: String,
+}
+
+#[derive(Clone, Debug, Deserialize)]
 pub struct StatusLocale {
     pub live: String,
     pub paused: String,
@@ -36,6 +42,7 @@ pub struct LocaleConfig {
     pub name: String,
     pub header: HeaderLocale,
     pub playlist: PlaylistLocale,
+    pub player: PlayerLocale,
     pub status: StatusLocale,
 }
 
@@ -129,6 +136,17 @@ impl Language {
         &self.config().playlist.live_badge
     }
 
+    /// Placeholder message when a track has no lyrics file.
+    pub fn no_lyrics_text(self) -> &'static str {
+        &self.config().player.no_lyrics
+    }
+
+    /// Sub-hint when a track has no lyrics file.
+    #[allow(dead_code)]
+    pub fn no_lyrics_hints(self) -> &'static str {
+        &self.config().player.no_lyrics_hints
+    }
+
     /// Live badge text.
     pub fn live_label(self) -> &'static str {
         &self.config().status.live
@@ -158,5 +176,6 @@ mod tests {
         assert_eq!(Language::English.name(), "English");
         assert!(Language::Vietnamese.playlist_title(3).contains("DANH SÁCH"));
         assert!(Language::English.playlist_title(3).contains("PLAYLIST"));
+        assert!(Language::Vietnamese.no_lyrics_text().contains("không có lời"));
     }
 }

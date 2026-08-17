@@ -71,8 +71,13 @@ impl Session {
         };
 
         let audio_path = crate::audio::resolve_path(config::DATA_DIR, &track.audio)?;
-        let lyric_path = crate::audio::resolve_path(config::DATA_DIR, &track.lyrics)?;
-        let sentences = crate::lyrics::load(&lyric_path)?;
+        let sentences = if track.lyrics.is_empty() {
+            Vec::new()
+        } else if let Ok(lyric_path) = crate::audio::resolve_path(config::DATA_DIR, &track.lyrics) {
+            crate::lyrics::load(&lyric_path).unwrap_or_default()
+        } else {
+            Vec::new()
+        };
         let envelope = crate::analysis::envelope::Envelope::scan(audio_path.clone());
 
         self.audio.load_file(&audio_path)?;
@@ -289,7 +294,14 @@ pub fn App(props: &AppProps, mut hooks: Hooks) -> impl Into<AnyElement<'static>>
         a.note
     };
 
-    let lines = visible_lines(session.clone(), now, render_past.get(), &layout, &theme);
+    let lines = visible_lines(
+        session.clone(),
+        now,
+        render_past.get(),
+        current_lang,
+        &layout,
+        &theme,
+    );
 
     let spectrum = {
         let a = analyzer.lock().unwrap();
@@ -440,6 +452,7 @@ fn visible_lines(
     session: Arc<Session>,
     now: i64,
     render_past: bool,
+    lang: crate::i18n::Language,
     layout: &Layout,
     theme: &color::Theme,
 ) -> Vec<AnyElement<'static>> {
@@ -447,7 +460,22 @@ fn visible_lines(
     let sentences = &*sentences_guard;
     if sentences.is_empty() {
         return vec![element! {
-            Text(color: theme.paused, content: "No lyrics loaded.")
+            View(
+                margin_top: 2,
+                margin_bottom: 2,
+                flex_direction: FlexDirection::Column,
+                align_items: AlignItems::Center,
+            ) {
+                Text(
+                    color: theme.lyric_singing,
+                    weight: Weight::Bold,
+                    content: lang.no_lyrics_text().to_string(),
+                )
+                Text(
+                    color: theme.keybinds_dim,
+                    content: lang.no_lyrics_hints().to_string(),
+                )
+            }
         }
         .into()];
     }

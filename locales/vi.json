@@ -18,6 +18,10 @@
     "footer_hints": "[↑/↓] Chọn  •  [Enter] Phát  •  [Esc/L] Đóng",
     "live_badge": "[LIVE]"
   },
+  "player": {
+    "no_lyrics": "♫ ♪ ♫  (Bài hát không có lời / Instrumental)  ♫ ♪ ♫",
+    "no_lyrics_hints": "Đang phát âm thanh • Visualizer & Nốt nhạc đang hoạt động"
+  },
   "status": {
     "live": "● LIVE",
     "paused": "■ TẠM DỪNG"

@@ -18,6 +18,10 @@
     "footer_hints": "[↑/↓] Select  •  [Enter] Play  •  [Esc/L] Close",
     "live_badge": "[LIVE]"
   },
+  "player": {
+    "no_lyrics": "♫ ♪ ♫  (Instrumental / No Lyrics Available)  ♫ ♪ ♫",
+    "no_lyrics_hints": "Playing Audio • Spectrum Visualizer & Pitch Active"
+  },
   "status": {
     "live": "● LIVE",
     "paused": "■ PAUSED"

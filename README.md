@@ -127,31 +127,27 @@ Bấm phím **`I`** trong khi đang chạy để chuyển đổi ngôn ngữ t�
 
 ---
 
+## 🗄️ Quản Lý Bài Hát Bằng SQLite & Tự Động Quét Thư Mục (Folder Auto-Scan)
+
+Ứng dụng tích hợp sẵn cơ sở dữ liệu **SQLite (`library.db`)** và engine tự động quét mọi file nhạc trong thư mục:
+
+### 🌟 Tính năng nổi bật:
+1. **Không bắt buộc phải có file Lyric**: Bạn có thể thả bất kỳ file nhạc nào (`.mp3`, `.wav`, `.ogg`, `.flac`, `.m4a`) vào thư mục `data/`. Nếu không có file `.json` hoặc `.lrc`, ứng dụng **vẫn phát nhạc bình thường** và hiển thị hiệu ứng sóng âm Spectrum + Waveform Envelope.
+2. **Tự động bóc tách Tên bài hát & Ca sĩ**: Tự động phân tích từ tên file (ví dụ: `Son Tung M-TP - Dung Ve Tre.mp3` ➔ Artist: *Son Tung M-TP*, Title: *Dung Ve Tre*).
+3. **Tự động liên kết Lyric**: Nếu có file lyric cùng tên (`song.json` hoặc `song.lrc`), player sẽ tự động nạp lời.
+4. **Hỗ trợ phát bất kỳ thư mục nào qua CLI**:
+   ```bash
+   cargo run -- /path/to/my-music
+   ```
+
+---
+
 ## 📑 Danh Sách Phát (Playlist Support)
 
-Ứng dụng hỗ trợ phát nhiều bài hát liên tục thông qua danh sách trong [`data/playlist.json`](data/playlist.json):
-
-```json
-[
-    {
-        "id": "mua-he-nam-ay",
-        "title": "Mùa Hè Năm Ấy",
-        "artist": "Vũ",
-        "audio": "c.mp3",
-        "lyrics": "c.json"
-    },
-    {
-        "id": "nothing-without-you",
-        "title": "NOTHING WITHOUT YOU",
-        "artist": "JUNE",
-        "audio": "a1.mp3",
-        "lyrics": "a1.json"
-    }
-]
-```
+Ứng dụng hỗ trợ phát nhiều bài hát liên tục thông qua SQLite Database hoặc danh sách trong [`data/playlist.json`](data/playlist.json):
 
 * **Tự động chuyển bài (Auto-advance)**: Khi bài hát kết thúc, player sẽ tự động chuyển sang bài tiếp theo trong danh sách.
-* **Tự động thêm bài hát mới**: Dùng tool `audio-aligner/batch_add_song.py` để tự động bóc tách từ và nạp bài mới vào playlist:
+* **Tự động bóc tách từ & căn chỉnh lyric**: Dùng tool `audio-aligner/batch_add_song.py` để tự động nạp lời chuẩn:
   ```bash
   cd ../audio-aligner
   ./venv/bin/python batch_add_song.py /path/to/song.mp3 --lyrics /path/to/lyric.txt --title "Tên Bài" --artist "Ca Sĩ" -l vi
