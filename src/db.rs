@@ -1,6 +1,6 @@
 //! SQLite database management for configured music folders and dynamic scanning.
 
-use std::collections::{HashMap, HashSet};
+use std::collections::HashSet;
 use std::path::{Path, PathBuf};
 use std::time::{SystemTime, UNIX_EPOCH};
 
@@ -13,22 +13,13 @@ const AUDIO_EXTENSIONS: &[&str] = &["mp3", "wav", "ogg", "flac", "m4a", "aac"];
 
 /// Parse track title and artist cleanly from a filename stem (without extension).
 ///
-/// Handles common music naming conventions:
+/// Handles standard music naming conventions:
 /// - "Artist - Title" => (Title, Artist)
 /// - "01. Artist - Title" => (Title, Artist)
 /// - "01 - Title" => (Title, Unknown Artist)
 /// - "Song_Name" => (Song Name, Unknown Artist)
-/// - "Song Name (2)" => (Song Name, Unknown Artist) [strips browser duplicate copy numbers]
 pub fn parse_title_and_artist(file_stem: &str) -> (String, String) {
     let mut clean = file_stem.replace('_', " ").trim().to_string();
-
-    // Strip trailing browser download copy numbers like " (1)", " (2)", " (9)"
-    if let (Some(open_paren), true) = (clean.rfind(" ("), clean.ends_with(')')) {
-        let inner = &clean[open_paren + 2..clean.len() - 1];
-        if !inner.is_empty() && inner.chars().all(|c| c.is_ascii_digit()) {
-            clean = clean[..open_paren].trim().to_string();
-        }
-    }
 
     // Strip leading track number like "01. ", "01 - ", "01 "
     if let Some(pos) = clean.find(['.', '-', ' ']) {
@@ -154,7 +145,6 @@ pub fn scan_folder_for_tracks(folder: impl AsRef<Path>) -> Result<Vec<Track>> {
         .with_context(|| format!("reading directory {}", folder.display()))?;
 
     let mut tracks: Vec<Track> = Vec::new();
-    let mut seen_keys: HashMap<(String, String), usize> = HashMap::new();
 
     for entry in entries.flatten() {
         let path = entry.path();
@@ -221,28 +211,13 @@ pub fn scan_folder_for_tracks(folder: impl AsRef<Path>) -> Result<Vec<Track>> {
             String::new()
         };
 
-        let new_track = Track {
+        tracks.push(Track {
             id,
             title,
             artist,
             audio: path.to_string_lossy().to_string(),
             lyrics: lyrics_path,
-        };
-
-        let key = (
-            new_track.title.trim().to_lowercase(),
-            new_track.artist.trim().to_lowercase(),
-        );
-
-        if let Some(&existing_idx) = seen_keys.get(&key) {
-            // If the new duplicate copy has lyrics and existing does not, upgrade it
-            if tracks[existing_idx].lyrics.is_empty() && !new_track.lyrics.is_empty() {
-                tracks[existing_idx] = new_track;
-            }
-        } else {
-            seen_keys.insert(key, tracks.len());
-            tracks.push(new_track);
-        }
+        });
     }
 
     tracks.sort_by(|a, b| a.title.cmp(&b.title));
@@ -250,34 +225,18 @@ pub fn scan_folder_for_tracks(folder: impl AsRef<Path>) -> Result<Vec<Track>> {
 }
 
 /// Read all configured folders from SQLite and dynamically scan each to load the complete playlist.
-/// Automatically deduplicates tracks across folders and handles duplicate download copies.
+/// Only filters out duplicate occurrences of the exact same file path on disk.
 pub fn load_all_tracks_from_db_folders(conn: &Connection) -> Result<Vec<Track>> {
     let folders = list_folders(conn)?;
     let mut all_tracks: Vec<Track> = Vec::new();
     let mut seen_canonical_audio: HashSet<PathBuf> = HashSet::new();
-    let mut seen_keys: HashMap<(String, String), usize> = HashMap::new();
 
     for folder in folders {
         if let Ok(tracks) = scan_folder_for_tracks(&folder) {
             for track in tracks {
                 let can_path = std::fs::canonicalize(&track.audio)
                     .unwrap_or_else(|_| PathBuf::from(&track.audio));
-                if !seen_canonical_audio.insert(can_path) {
-                    continue;
-                }
-
-                let key = (
-                    track.title.trim().to_lowercase(),
-                    track.artist.trim().to_lowercase(),
-                );
-
-                if let Some(&existing_idx) = seen_keys.get(&key) {
-                    // Prefer the track that has lyrics
-                    if all_tracks[existing_idx].lyrics.is_empty() && !track.lyrics.is_empty() {
-                        all_tracks[existing_idx] = track;
-                    }
-                } else {
-                    seen_keys.insert(key, all_tracks.len());
+                if seen_canonical_audio.insert(can_path) {
                     all_tracks.push(track);
                 }
             }
@@ -303,11 +262,11 @@ mod tests {
         assert_eq!(a, "Vu");
 
         let (t, a) = parse_title_and_artist("hqhuy - mua he nam ay (2)");
-        assert_eq!(t, "mua he nam ay");
+        assert_eq!(t, "mua he nam ay (2)");
         assert_eq!(a, "hqhuy");
 
         let (t, a) = parse_title_and_artist("Dreamers (9)");
-        assert_eq!(t, "Dreamers");
+        assert_eq!(t, "Dreamers (9)");
         assert_eq!(a, "Unknown Artist");
 
         let (t, a) = parse_title_and_artist("SimpleSong");
@@ -327,12 +286,8 @@ mod tests {
         let audio1 = temp_dir.join("Artist - Song One.mp3");
         let _ = std::fs::write(&audio1, b"fake mp3 data");
 
-        // Duplicate download copy
-        let audio2 = temp_dir.join("Artist - Song One (1).mp3");
-        let _ = std::fs::write(&audio2, b"fake mp3 data 2");
-
-        let audio3 = temp_dir.join("Other - Song Two.wav");
-        let _ = std::fs::write(&audio3, b"fake wav data");
+        let audio2 = temp_dir.join("Other - Song Two.wav");
+        let _ = std::fs::write(&audio2, b"fake wav data");
 
         add_folder(&conn, &temp_dir).unwrap();
 
@@ -340,7 +295,6 @@ mod tests {
         assert!(folders.iter().any(|f| f.ends_with("test_karaoke_music_scan")));
 
         let tracks = load_all_tracks_from_db_folders(&conn).unwrap();
-        // audio2 was deduplicated with audio1
         assert_eq!(tracks.len(), 2);
         assert_eq!(tracks[0].title, "Song One");
         assert_eq!(tracks[1].title, "Song Two");
