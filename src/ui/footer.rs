@@ -329,7 +329,7 @@ where
                     Text(
                         color: theme.highlight,
                         weight: Weight::Bold,
-                        content: "[L]",
+                        content: " ☰ ",
                     )
                 }
             }
@@ -526,7 +526,7 @@ mod click_tests {
                 }
                 Button(handler: mark(6)) {
                     View(width: 6, justify_content: JustifyContent::Center) {
-                        Text(content: "[L]")
+                        Text(content: " ☰ ")
                     }
                 }
             }
