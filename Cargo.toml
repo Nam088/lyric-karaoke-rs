@@ -1,5 +1,5 @@
 [package]
-name = "lyric-karaoke-rs"
+name = "sound-player"
 version = "0.1.0"
 edition = "2024"
 

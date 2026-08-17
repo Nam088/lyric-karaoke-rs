@@ -1,10 +1,10 @@
-# Lyric Karaoke (Rust)
+# Sound Player (Rust)
 
-Terminal karaoke player written in Rust. Features smooth per-grapheme text animation, interactive mouse and keyboard transport, audio spectrum visualizer, pitch detection, and zero-delay clock-derived animations.
+A powerful, high-performance terminal music player and visualizer written in Rust. Features smooth per-grapheme lyric animation, SQLite music library management, dynamic folder scanning, audio spectrum visualizer, pitch detection, and zero-delay clock-derived animations.
 
 ```
 ╭────────────────────────────────────────────────────────────────────────────╮
-│     🎤 Karaoke                                    ● LIVE │ 01:25.285     │
+│     🎧 Sound Player                               ● LIVE │ 01:25.285     │
 │     ──────────────────────────────────────────────────────────────────     │
 │                       Đừng về trễ nha em yêu dấu ơi!                       │
 │                             ♫  ♪  ♫  ♪  ♫  ♪  ♫                            │
@@ -54,8 +54,8 @@ Terminal karaoke player written in Rust. Features smooth per-grapheme text anima
 
 ```bash
 # Clone repository
-git clone https://github.com/your-username/lyric-karaoke-rs.git
-cd lyric-karaoke-rs
+git clone https://github.com/Nam088/sound-player.git
+cd sound-player
 
 # Cài đặt file nhạc và lời bài hát vào thư mục data/
 #   data/a.mp3 (hoặc file .mp3 bài hát bạn muốn)
