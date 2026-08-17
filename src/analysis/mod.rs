@@ -9,7 +9,9 @@ pub mod bands;
 pub mod envelope;
 pub mod pitch;
 
-use rustfft::{num_complex::Complex, FftPlanner};
+use std::sync::Arc;
+
+use rustfft::{num_complex::Complex, Fft, FftPlanner};
 
 /// 4096 at 44.1kHz is a 93ms window and 10.8Hz per bin, which is what the low
 /// bands need. At 2048 the bottom two octaves land inside a single bin.
@@ -33,7 +35,9 @@ const GAMMA: f32 = 1.35;
 const HANN_NPBW: f32 = 1.5;
 
 pub struct Analyzer {
-    planner: FftPlanner<f32>,
+    /// Planned once for `FFT_SIZE` and reused every frame; planning involves a
+    /// cache lookup under a lock, which a 33Hz caller has no reason to repeat.
+    fft: Arc<dyn Fft<f32>>,
     window: Vec<f32>,
     /// Standard bands the spectrum is measured in. Rebuilt when the terminal
     /// resizes, never per frame.
@@ -42,6 +46,14 @@ pub struct Analyzer {
     fraction: u32,
     mag: Vec<f32>,
     agc: f32,
+
+    /// Scratch space reused every `feed`, so a 33Hz caller does not put fresh
+    /// buffers on the heap every frame.
+    fft_buf: Vec<Complex<f32>>,
+    /// One entry per band; scratch space for `update_levels`.
+    band_db: Vec<f32>,
+    /// One entry per column; scratch space for `update_levels`.
+    raw: Vec<f32>,
 
     /// Smoothed column heights, 0 to 1, one per canvas dot column.
     pub levels: Vec<f32>,
@@ -62,14 +74,19 @@ impl Analyzer {
             .collect();
 
         let fraction = bands::best_fraction(columns, F_MIN, F_MAX);
+        let bands = bands::bands(fraction, F_MIN, F_MAX);
+        let band_db = vec![0.0; bands.len()];
 
         Self {
-            planner: FftPlanner::new(),
+            fft: FftPlanner::new().plan_fft_forward(FFT_SIZE),
             window,
-            bands: bands::bands(fraction, F_MIN, F_MAX),
+            bands,
             fraction,
             mag: vec![0.0; FFT_SIZE / 2],
             agc: 0.35,
+            fft_buf: vec![Complex::new(0.0, 0.0); FFT_SIZE],
+            band_db,
+            raw: vec![0.0; columns],
             levels: vec![0.0; columns],
             peaks: vec![0.0; columns],
             note: None,
@@ -84,11 +101,13 @@ impl Analyzer {
         }
         self.levels.resize(columns, 0.0);
         self.peaks.resize(columns, 0.0);
+        self.raw.resize(columns, 0.0);
 
         let fraction = bands::best_fraction(columns, F_MIN, F_MAX);
         if fraction != self.fraction {
             self.fraction = fraction;
             self.bands = bands::bands(fraction, F_MIN, F_MAX);
+            self.band_db.resize(self.bands.len(), 0.0);
         }
     }
 
@@ -102,19 +121,21 @@ impl Analyzer {
             return;
         }
 
-        let mut buf: Vec<Complex<f32>> = samples[samples.len() - FFT_SIZE..]
-            .iter()
-            .zip(&self.window)
-            .map(|(&s, &w)| Complex::new(s * w, 0.0))
-            .collect();
-        self.planner.plan_fft_forward(FFT_SIZE).process(&mut buf);
+        for (c, (&s, &w)) in self
+            .fft_buf
+            .iter_mut()
+            .zip(samples[samples.len() - FFT_SIZE..].iter().zip(&self.window))
+        {
+            *c = Complex::new(s * w, 0.0);
+        }
+        self.fft.process(&mut self.fft_buf);
 
         let bins = FFT_SIZE / 2;
         // A full scale sine through a Hann window peaks at N/4. Dividing by
         // that puts the magnitudes back on a 0 dBFS reference.
         let scale = FFT_SIZE as f32 / 4.0;
 
-        for (m, c) in self.mag.iter_mut().zip(&buf[..bins]) {
+        for (m, c) in self.mag.iter_mut().zip(&self.fft_buf[..bins]) {
             *m = c.norm() / scale;
         }
 
@@ -131,30 +152,27 @@ impl Analyzer {
         let hz_per_bin = sample_rate / FFT_SIZE as f32;
 
         // Level of every standard band, in dB relative to full scale.
-        let band_db: Vec<f32> = self
-            .bands
-            .iter()
-            .map(|b| band_level_db(&self.mag, *b, hz_per_bin))
-            .collect();
+        for (slot, &b) in self.band_db.iter_mut().zip(&self.bands) {
+            *slot = band_level_db(&self.mag, b, hz_per_bin);
+        }
 
         // Bands are the measurement, columns are the display. Stretch one onto
         // the other rather than bending the analysis to fit the terminal.
-        let raw: Vec<f32> = (0..cols)
-            .map(|x| {
-                let db = sample(&band_db, x as f32 / (cols.max(2) - 1) as f32);
-                ((db - DB_FLOOR) / -DB_FLOOR).clamp(0.0, 1.0)
-            })
-            .collect();
+        let denom = (cols.max(2) - 1) as f32;
+        for (x, r) in self.raw.iter_mut().enumerate() {
+            let db = sample(&self.band_db, x as f32 / denom);
+            *r = ((db - DB_FLOOR) / -DB_FLOOR).clamp(0.0, 1.0);
+        }
 
         // Automatic gain. Rises quickly so a chorus does not clip off the top,
         // falls slowly so a quiet passage opens up gradually instead of
         // pumping between frames.
-        let frame_max = raw.iter().fold(0.0f32, |a, &b| a.max(b));
+        let frame_max = self.raw.iter().fold(0.0f32, |a, &b| a.max(b));
         let rate = if frame_max > self.agc { 6.0 } else { 0.35 };
         self.agc += (frame_max - self.agc) * (rate * dt).min(1.0);
         let gain = 1.0 / self.agc.max(0.25);
 
-        for ((level, peak), &r) in self.levels.iter_mut().zip(&mut self.peaks).zip(&raw) {
+        for ((level, peak), &r) in self.levels.iter_mut().zip(&mut self.peaks).zip(&self.raw) {
             let target = (r * gain).clamp(0.0, 1.0).powf(GAMMA);
             let rate = if target > *level { 14.0 } else { 5.0 };
             *level += (target - *level) * (rate * dt).min(1.0);

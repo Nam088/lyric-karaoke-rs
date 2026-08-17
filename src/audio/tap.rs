@@ -34,7 +34,8 @@ impl SampleRing {
     /// only while the buffer is still filling.
     pub fn latest(&self, n: usize) -> Vec<f32> {
         let buf = self.0.lock().unwrap();
-        buf.iter().rev().take(n).rev().copied().collect()
+        let skip = buf.len().saturating_sub(n);
+        buf.iter().skip(skip).copied().collect()
     }
 
     /// Drop everything. Called on seek so the analyser does not blend audio
