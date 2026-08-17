@@ -1,4 +1,4 @@
-//! Interactive Playlist & Music Folders Manager Modal Dialog formatted as a Table.
+//! Interactive Playlist & Music Folders Manager Modal Dialog formatted as an interactive Table with button cells.
 
 use std::sync::{Arc, Mutex};
 
@@ -42,7 +42,7 @@ fn pad_truncate(s: &str, target_width: usize) -> String {
 }
 
 #[allow(clippy::too_many_arguments)]
-pub fn render<FSelect, FClose, FTabChange, FAddFolder, FRescan, FDeleteFolder>(
+pub fn render<FSelect, FClose, FTabChange, FAddFolder, FRescan, FDeleteFolder, FSelectFolder>(
     session: Arc<Session>,
     tab: ModalTab,
     cursor: usize,
@@ -58,6 +58,7 @@ pub fn render<FSelect, FClose, FTabChange, FAddFolder, FRescan, FDeleteFolder>(
     on_add_folder: FAddFolder,
     on_rescan: FRescan,
     on_delete_folder: FDeleteFolder,
+    on_select_folder: FSelectFolder,
 ) -> AnyElement<'static>
 where
     FSelect: FnMut(usize) + Send + 'static,
@@ -66,6 +67,7 @@ where
     FAddFolder: FnMut() + Send + 'static,
     FRescan: FnMut() + Send + 'static,
     FDeleteFolder: FnMut(usize) + Send + 'static,
+    FSelectFolder: FnMut(usize) + Send + 'static,
 {
     let playlist = session.playlist.read().unwrap();
     let current_idx = *session.track_index.read().unwrap();
@@ -77,6 +79,7 @@ where
     let on_add_folder = Arc::new(Mutex::new(on_add_folder));
     let on_rescan = Arc::new(Mutex::new(on_rescan));
     let on_delete_folder = Arc::new(Mutex::new(on_delete_folder));
+    let on_select_folder = Arc::new(Mutex::new(on_select_folder));
 
     let (bg_r, bg_g, bg_b) = theme.dark_base;
     let modal_bg = Color::Rgb {
@@ -89,7 +92,7 @@ where
     let col_title_w = 32;
     let col_artist_w = 22;
 
-    // ── Tab 1: Tracks Table ──
+    // ── Tab 1: Tracks Table Button Rows ──
     let track_rows: Vec<AnyElement<'static>> = playlist
         .tracks
         .iter()
@@ -166,7 +169,7 @@ where
         })
         .collect();
 
-    // ── Tab 2: Configured Folders Table in SQLite ──
+    // ── Tab 2: Configured Folders Table Button Rows ──
     let folders = session.list_music_folders();
     let col_f_no_w = 4;
     let col_f_path_w = 44;
@@ -202,6 +205,7 @@ where
                 };
 
                 let on_del = on_delete_folder.clone();
+                let on_sel_f = on_select_folder.clone();
 
                 element! {
                     View(
@@ -213,17 +217,30 @@ where
                         border_style: if is_selected { BorderStyle::Single } else { BorderStyle::None },
                         border_color: if is_selected { theme.highlight } else { Color::Reset },
                     ) {
-                        View(flex_direction: FlexDirection::Row) {
-                            Text(color: theme.elapsed, weight: weight, content: no_col)
-                            Text(color: text_color, weight: weight, content: format!(" {}", path_col))
-                            Text(color: theme.remaining, content: format!(" {}", count_col))
+                        Button(handler: move |_| {
+                            if let Ok(mut f) = on_sel_f.lock() {
+                                f(idx);
+                            }
+                        }) {
+                            View(flex_direction: FlexDirection::Row) {
+                                Text(color: theme.elapsed, weight: weight, content: no_col)
+                                Text(color: text_color, weight: weight, content: format!(" {}", path_col))
+                                Text(color: theme.remaining, content: format!(" {}", count_col))
+                            }
                         }
                         Button(handler: move |_| {
                             if let Ok(mut f) = on_del.lock() {
                                 f(idx);
                             }
                         }) {
-                            Text(color: theme.paused, weight: Weight::Bold, content: format!(" {} ", lang.btn_delete()))
+                            View(
+                                border_style: BorderStyle::Single,
+                                border_color: theme.paused,
+                                padding_left: 1,
+                                padding_right: 1,
+                            ) {
+                                Text(color: theme.paused, weight: Weight::Bold, content: lang.btn_delete().to_string())
+                            }
                         }
                     }
                 }
@@ -251,7 +268,7 @@ where
             padding_bottom: 1,
             padding_left: 2,
             padding_right: 2,
-            width: (width.min(92)) as u32,
+            width: (width.min(94)) as u32,
             align_items: AlignItems::Center,
         ) {
             // Header Bar with Tab Buttons and Close Button
@@ -267,23 +284,38 @@ where
                             f(ModalTab::Tracks);
                         }
                     }) {
-                        Text(
-                            color: tab_tracks_color,
-                            weight: if tab == ModalTab::Tracks { Weight::Bold } else { Weight::Normal },
-                            content: format!(" 𝄢 [1] {} ({}) ", lang.tracks_tab(), playlist.len()),
-                        )
+                        View(
+                            border_style: BorderStyle::Single,
+                            border_color: tab_tracks_color,
+                            padding_left: 1,
+                            padding_right: 1,
+                            margin_right: 1,
+                        ) {
+                            Text(
+                                color: tab_tracks_color,
+                                weight: if tab == ModalTab::Tracks { Weight::Bold } else { Weight::Normal },
+                                content: format!("𝄢 [1] {} ({})", lang.tracks_tab(), playlist.len()),
+                            )
+                        }
                     }
-                    Text(color: theme.remaining, content: "│")
+
                     Button(handler: move |_| {
                         if let Ok(mut f) = on_tab_f.lock() {
                             f(ModalTab::Folders);
                         }
                     }) {
-                        Text(
-                            color: tab_folders_color,
-                            weight: if tab == ModalTab::Folders { Weight::Bold } else { Weight::Normal },
-                            content: format!(" 📂 [2] {} (SQL: {}) ", lang.folders_tab(), folders.len()),
-                        )
+                        View(
+                            border_style: BorderStyle::Single,
+                            border_color: tab_folders_color,
+                            padding_left: 1,
+                            padding_right: 1,
+                        ) {
+                            Text(
+                                color: tab_folders_color,
+                                weight: if tab == ModalTab::Folders { Weight::Bold } else { Weight::Normal },
+                                content: format!("📂 [2] {} (SQL: {})", lang.folders_tab(), folders.len()),
+                            )
+                        }
                     }
                 }
 
@@ -292,7 +324,14 @@ where
                         f();
                     }
                 }) {
-                    Text(color: theme.remaining, weight: Weight::Bold, content: format!("{} ", lang.playlist_close_btn()))
+                    View(
+                        border_style: BorderStyle::Single,
+                        border_color: theme.remaining,
+                        padding_left: 1,
+                        padding_right: 1,
+                    ) {
+                        Text(color: theme.remaining, weight: Weight::Bold, content: lang.playlist_close_btn().to_string())
+                    }
                 }
             }
 
@@ -309,15 +348,29 @@ where
                                 f();
                             }
                         }) {
-                            Text(color: theme.highlight, weight: Weight::Bold, content: format!(" {} ", lang.btn_add_folder()))
+                            View(
+                                border_style: BorderStyle::Single,
+                                border_color: theme.highlight,
+                                padding_left: 1,
+                                padding_right: 1,
+                                margin_right: 1,
+                            ) {
+                                Text(color: theme.highlight, weight: Weight::Bold, content: lang.btn_add_folder().to_string())
+                            }
                         }
-                        Text(color: theme.remaining, content: "  ")
                         Button(handler: move |_| {
                             if let Ok(mut f) = on_rescan_btn.lock() {
                                 f();
                             }
                         }) {
-                            Text(color: theme.lyric_singing, weight: Weight::Bold, content: format!(" {} ", lang.btn_rescan()))
+                            View(
+                                border_style: BorderStyle::Single,
+                                border_color: theme.lyric_singing,
+                                padding_left: 1,
+                                padding_right: 1,
+                            ) {
+                                Text(color: theme.lyric_singing, weight: Weight::Bold, content: lang.btn_rescan().to_string())
+                            }
                         }
                     }
                 })
@@ -359,7 +412,7 @@ where
             #(if !is_adding_folder {
                 Some(element! {
                     View(width: 100pct, margin_bottom: 1) {
-                        Text(color: theme.remaining, content: "─".repeat(84))
+                        Text(color: theme.remaining, content: "─".repeat(86))
                     }
                 })
             } else {

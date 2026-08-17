@@ -504,6 +504,9 @@ pub fn App(props: &AppProps, mut hooks: Hooks) -> impl Into<AnyElement<'static>>
                             folder_cursor.set(remaining - 1);
                         }
                     },
+                    move |idx| {
+                        folder_cursor.set(idx);
+                    },
                 ))
             }
         }
