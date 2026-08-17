@@ -330,7 +330,7 @@ where
                             Text(
                                 color: tab_tracks_color,
                                 weight: if tab == ModalTab::Tracks { Weight::Bold } else { Weight::Normal },
-                                content: format!("𝄢 [1] {} ({})", lang.tracks_tab(), playlist.len()),
+                                content: format!("[1] {} ({})", lang.tracks_tab(), playlist.len()),
                             )
                         }
                     }
@@ -349,7 +349,7 @@ where
                             Text(
                                 color: tab_folders_color,
                                 weight: if tab == ModalTab::Folders { Weight::Bold } else { Weight::Normal },
-                                content: format!("📂 [2] {} (SQL: {})", lang.folders_tab(), folders.len()),
+                                content: format!("[2] {} (SQL: {})", lang.folders_tab(), folders.len()),
                             )
                         }
                     }
@@ -474,7 +474,7 @@ where
                                         Text(
                                             color: theme.highlight,
                                             weight: Weight::Bold,
-                                            content: format!("📂 {}", lang.add_folder_prompt()),
+                                            content: lang.add_folder_prompt().to_string(),
                                         )
                                         View(flex_direction: FlexDirection::Row, margin_top: 1) {
                                             Text(color: theme.lyric_singing, weight: Weight::Bold, content: "> ")

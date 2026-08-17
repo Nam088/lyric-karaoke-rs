@@ -87,7 +87,7 @@ pub const LINE_SPACING: usize = 0;     // 0 = các dòng lyric liền kề, 1 = 
 
 ---
 
-## 🎮 Điều Khiển (Controls)
+## Điều Khiển (Controls)
 
 ### Bằng bàn phím:
 | Phím (Key) | Chức năng (Action) |
@@ -103,10 +103,11 @@ pub const LINE_SPACING: usize = 0;     // 0 = các dòng lyric liền kề, 1 = 
 | `D` *(trong tab Folder)* | **Xóa Thư Mục**: Xóa thư mục đang chọn khỏi SQLite |
 | `R` *(trong tab Folder)* | **Quét Lại (Rescan)**: Quét lại tất cả thư mục để cập nhật bài hát mới nhất |
 | `↑` / `↓` hoặc `J` / `K` | Di chuyển chọn bài hát / chọn thư mục trong Modal |
+| `←` / `→` hoặc `PgUp`/`PgDn` | Phân trang / Lật trang danh sách bài hát |
 | `Enter` | Phát bài hát đang chọn / Xác nhận thêm thư mục |
-| `I` | Đổi Ngôn Ngữ i18n (`Tiếng Việt (VI)` ➔ `English (EN)`) |
-| `C` | Đổi Bảng Màu Theme Preset (`Emerald` ➔ `Cyberpunk` ➔ `Ocean` ➔ `Sunset` ➔ `Sakura` ➔ `Mono` ➔ `Light`) |
-| `S` | Đổi kiểu Visualizer Spectrum (`Curve` ➔ `Mirror` ➔ `Line` ➔ `Bars` ➔ `Off`) |
+| `I` | Đổi Ngôn Ngữ i18n (`Tiếng Việt (VI)` -> `English (EN)`) |
+| `C` | Đổi Bảng Màu Theme Preset (`Emerald` -> `Cyberpunk` -> `Ocean` -> `Sunset` -> `Sakura` -> `Mono` -> `Light`) |
+| `S` | Đổi kiểu Visualizer Spectrum (`Curve` -> `Mirror` -> `Line` -> `Bars` -> `Off`) |
 | `N` | Bật / Tắt hiển thị Nốt nhạc (Pitch Detection & Cents offset) |
 | `H` | Bật / Tắt thanh hướng dẫn phím tắt ở header |
 | `Q` / `Esc` | Đóng Modal / Hủy nhập / Thoát ứng dụng |
@@ -122,7 +123,7 @@ pub const LINE_SPACING: usize = 0;     // 0 = các dòng lyric liền kề, 1 = 
 
 ---
 
-## 🌐 Đa Ngôn Ngữ (i18n Support qua JSON)
+## Đa Ngôn Ngữ (i18n Support qua JSON)
 
 Toàn bộ ngôn ngữ giao diện được cấu hình hoàn toàn độc lập qua các file JSON tại thư mục [`locales/`](locales/):
 * [`locales/vi.json`](locales/vi.json): Cấu hình tiếng Việt.
@@ -132,13 +133,13 @@ Bấm phím **`I`** trong khi đang chạy để chuyển đổi ngôn ngữ t�
 
 ---
 
-## 🗄️ Quản Lý Bài Hát Bằng SQLite & Tự Động Quét Thư Mục (Folder Auto-Scan)
+## Quản Lý Bài Hát Bằng SQLite & Tự Động Quét Thư Mục (Folder Auto-Scan)
 
 Ứng dụng tích hợp sẵn cơ sở dữ liệu **SQLite (`library.db`)** và engine tự động quét mọi file nhạc trong thư mục:
 
-### 🌟 Tính năng nổi bật:
+### Tính năng nổi bật:
 1. **Không bắt buộc phải có file Lyric**: Bạn có thể thả bất kỳ file nhạc nào (`.mp3`, `.wav`, `.ogg`, `.flac`, `.m4a`) vào thư mục `data/`. Nếu không có file `.json` hoặc `.lrc`, ứng dụng **vẫn phát nhạc bình thường** và hiển thị hiệu ứng sóng âm Spectrum + Waveform Envelope.
-2. **Tự động bóc tách Tên bài hát & Ca sĩ**: Tự động phân tích từ tên file (ví dụ: `Son Tung M-TP - Dung Ve Tre.mp3` ➔ Artist: *Son Tung M-TP*, Title: *Dung Ve Tre*).
+2. **Tự động bóc tách Tên bài hát & Ca sĩ**: Tự động phân tích từ tên file (ví dụ: `Son Tung M-TP - Dung Ve Tre.mp3` -> Artist: *Son Tung M-TP*, Title: *Dung Ve Tre*).
 3. **Tự động liên kết Lyric**: Nếu có file lyric cùng tên (`song.json` hoặc `song.lrc`), player sẽ tự động nạp lời.
 4. **Hỗ trợ phát bất kỳ thư mục nào qua CLI**:
    ```bash
@@ -147,7 +148,7 @@ Bấm phím **`I`** trong khi đang chạy để chuyển đổi ngôn ngữ t�
 
 ---
 
-## 📑 Danh Sách Phát (Playlist Support)
+## Danh Sách Phát (Playlist Support)
 
 Ứng dụng hỗ trợ phát nhiều bài hát liên tục thông qua SQLite Database hoặc danh sách trong [`data/playlist.json`](data/playlist.json):
 
@@ -160,7 +161,7 @@ Bấm phím **`I`** trong khi đang chạy để chuyển đổi ngôn ngữ t�
 
 ---
 
-## ✨ Tính Năng Nổi Bật (Features)
+## Tính Năng Nổi Bật (Features)
 
 * **7 Color Theme Presets**: Chuyển đổi linh hoạt giữa các phong cách màu sắc (`Emerald`, `Cyberpunk`, `Ocean`, `Sunset`, `Sakura`, `Mono`, `Light` dành cho terminal nền trắng) chỉ với 1 phím bấm `C`.
 * **Zero-delay Clock-derived Animation**:

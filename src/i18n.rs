@@ -130,10 +130,10 @@ fn default_no_lyrics_short() -> String {
     "Không lời".to_string()
 }
 fn default_btn_add_folder() -> String {
-    "➕ Thêm Thư Mục [A]".to_string()
+    "[+] Thêm Thư Mục [A]".to_string()
 }
 fn default_btn_rescan() -> String {
-    "🔄 Quét Lại [R]".to_string()
+    "[R] Quét Lại".to_string()
 }
 fn default_btn_delete() -> String {
     "[Xóa]".to_string()
