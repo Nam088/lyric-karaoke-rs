@@ -79,6 +79,13 @@ pub fn add_folder(conn: &Connection, folder_path: impl AsRef<Path>) -> Result<()
     Ok(())
 }
 
+/// Remove a configured music folder from SQLite.
+pub fn remove_folder(conn: &Connection, folder_path: impl AsRef<Path>) -> Result<()> {
+    let path_str = folder_path.as_ref().to_string_lossy().to_string();
+    conn.execute("DELETE FROM folders WHERE path = ?1", params![path_str])?;
+    Ok(())
+}
+
 /// List all enabled music folders configured in SQLite.
 pub fn list_folders(conn: &Connection) -> Result<Vec<PathBuf>> {
     init_db(conn)?;

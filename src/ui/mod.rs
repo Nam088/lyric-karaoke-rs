@@ -119,6 +119,53 @@ impl Session {
         };
         self.switch_track(prev_idx)
     }
+
+    pub fn add_music_folder(&self, folder_path: impl AsRef<std::path::Path>) -> Result<usize> {
+        let db_path = std::path::PathBuf::from(config::DATA_DIR).join("library.db");
+        let conn = rusqlite::Connection::open(&db_path)?;
+        crate::db::add_folder(&conn, &folder_path)?;
+        let tracks = crate::db::load_all_tracks_from_db_folders(&conn)?;
+        let count = tracks.len();
+        {
+            let mut p = self.playlist.write().unwrap();
+            p.tracks = tracks;
+        }
+        Ok(count)
+    }
+
+    pub fn remove_music_folder(&self, folder_path: impl AsRef<std::path::Path>) -> Result<usize> {
+        let db_path = std::path::PathBuf::from(config::DATA_DIR).join("library.db");
+        let conn = rusqlite::Connection::open(&db_path)?;
+        crate::db::remove_folder(&conn, &folder_path)?;
+        let tracks = crate::db::load_all_tracks_from_db_folders(&conn)?;
+        let count = tracks.len();
+        {
+            let mut p = self.playlist.write().unwrap();
+            p.tracks = tracks;
+        }
+        Ok(count)
+    }
+
+    pub fn list_music_folders(&self) -> Vec<std::path::PathBuf> {
+        let db_path = std::path::PathBuf::from(config::DATA_DIR).join("library.db");
+        if let Ok(conn) = rusqlite::Connection::open(&db_path) {
+            crate::db::list_folders(&conn).unwrap_or_default()
+        } else {
+            Vec::new()
+        }
+    }
+
+    pub fn rescan_music_folders(&self) -> Result<usize> {
+        let db_path = std::path::PathBuf::from(config::DATA_DIR).join("library.db");
+        let conn = rusqlite::Connection::open(&db_path)?;
+        let tracks = crate::db::load_all_tracks_from_db_folders(&conn)?;
+        let count = tracks.len();
+        {
+            let mut p = self.playlist.write().unwrap();
+            p.tracks = tracks;
+        }
+        Ok(count)
+    }
 }
 
 #[derive(Default, Props)]
@@ -135,6 +182,10 @@ pub fn App(props: &AppProps, mut hooks: Hooks) -> impl Into<AnyElement<'static>>
     let mut show_keybinds = hooks.use_state(|| config::SHOW_KEYBINDS);
     let mut show_note = hooks.use_state(|| config::SHOW_NOTE);
     let mut show_playlist = hooks.use_state(|| false);
+    let mut modal_tab = hooks.use_state(playlist_modal::ModalTab::default);
+    let mut folder_cursor = hooks.use_state(|| 0usize);
+    let mut is_adding_folder = hooks.use_state(|| false);
+    let mut folder_input = hooks.use_state(String::new);
     let mut playlist_cursor = hooks.use_state(|| *session.track_index.read().unwrap());
     let mut render_past = hooks.use_state(|| config::RENDER_PAST_ON_START);
     let mut should_exit = hooks.use_state(|| false);
@@ -189,44 +240,132 @@ pub fn App(props: &AppProps, mut hooks: Hooks) -> impl Into<AnyElement<'static>>
 
         let is_modal = show_playlist.get();
         if is_modal {
-            match code {
-                KeyCode::Esc | KeyCode::Char('l') | KeyCode::Char('L') => {
-                    show_playlist.set(false);
+            if is_adding_folder.get() {
+                match code {
+                    KeyCode::Esc => {
+                        is_adding_folder.set(false);
+                        folder_input.set(String::new());
+                    }
+                    KeyCode::Enter => {
+                        let path_str = folder_input.read().clone();
+                        if !path_str.trim().is_empty() {
+                            let _ = s.add_music_folder(path_str.trim());
+                        }
+                        is_adding_folder.set(false);
+                        folder_input.set(String::new());
+                    }
+                    KeyCode::Backspace => {
+                        folder_input.write().pop();
+                    }
+                    KeyCode::Char(c) => {
+                        folder_input.write().push(c);
+                    }
+                    _ => {}
                 }
-                KeyCode::Up | KeyCode::Char('k') | KeyCode::Char('K') => {
-                    let p_len = s.playlist.read().unwrap().len();
-                    if p_len > 0 {
-                        let curr = playlist_cursor.get();
-                        let prev = if curr == 0 { p_len - 1 } else { curr - 1 };
-                        playlist_cursor.set(prev);
+                return;
+            }
+
+            match modal_tab.get() {
+                playlist_modal::ModalTab::Folders => {
+                    match code {
+                        KeyCode::Esc | KeyCode::Char('l') | KeyCode::Char('L') => {
+                            show_playlist.set(false);
+                        }
+                        KeyCode::Char('t') | KeyCode::Char('T') | KeyCode::Char('1') => {
+                            modal_tab.set(playlist_modal::ModalTab::Tracks);
+                        }
+                        KeyCode::Char('a') | KeyCode::Char('A') => {
+                            folder_input.set(String::new());
+                            is_adding_folder.set(true);
+                        }
+                        KeyCode::Char('d') | KeyCode::Char('D') => {
+                            let folders = s.list_music_folders();
+                            let fc = folder_cursor.get();
+                            if let Some(f) = folders.get(fc) {
+                                let _ = s.remove_music_folder(f);
+                            }
+                            let remaining = s.list_music_folders().len();
+                            if folder_cursor.get() >= remaining && remaining > 0 {
+                                folder_cursor.set(remaining - 1);
+                            }
+                        }
+                        KeyCode::Char('r') | KeyCode::Char('R') => {
+                            let _ = s.rescan_music_folders();
+                        }
+                        KeyCode::Up | KeyCode::Char('k') | KeyCode::Char('K') => {
+                            let f_len = s.list_music_folders().len();
+                            if f_len > 0 {
+                                let curr = folder_cursor.get();
+                                let prev = if curr == 0 { f_len - 1 } else { curr - 1 };
+                                folder_cursor.set(prev);
+                            }
+                        }
+                        KeyCode::Down | KeyCode::Char('j') | KeyCode::Char('J') => {
+                            let f_len = s.list_music_folders().len();
+                            if f_len > 0 {
+                                let curr = folder_cursor.get();
+                                let next = (curr + 1) % f_len;
+                                folder_cursor.set(next);
+                            }
+                        }
+                        KeyCode::Char('i') | KeyCode::Char('I') => {
+                            lang.set(lang.get().next());
+                        }
+                        KeyCode::Char(' ') => s.audio.toggle(),
+                        KeyCode::Char('q') | KeyCode::Char('Q') => should_exit.set(true),
+                        _ => {}
                     }
                 }
-                KeyCode::Down | KeyCode::Char('j') | KeyCode::Char('J') => {
-                    let p_len = s.playlist.read().unwrap().len();
-                    if p_len > 0 {
-                        let curr = playlist_cursor.get();
-                        let next = (curr + 1) % p_len;
-                        playlist_cursor.set(next);
+                playlist_modal::ModalTab::Tracks => {
+                    match code {
+                        KeyCode::Esc | KeyCode::Char('l') | KeyCode::Char('L') => {
+                            show_playlist.set(false);
+                        }
+                        KeyCode::Char('f') | KeyCode::Char('F') | KeyCode::Char('2') => {
+                            modal_tab.set(playlist_modal::ModalTab::Folders);
+                        }
+                        KeyCode::Up | KeyCode::Char('k') | KeyCode::Char('K') => {
+                            let p_len = s.playlist.read().unwrap().len();
+                            if p_len > 0 {
+                                let curr = playlist_cursor.get();
+                                let prev = if curr == 0 { p_len - 1 } else { curr - 1 };
+                                playlist_cursor.set(prev);
+                            }
+                        }
+                        KeyCode::Down | KeyCode::Char('j') | KeyCode::Char('J') => {
+                            let p_len = s.playlist.read().unwrap().len();
+                            if p_len > 0 {
+                                let curr = playlist_cursor.get();
+                                let next = (curr + 1) % p_len;
+                                playlist_cursor.set(next);
+                            }
+                        }
+                        KeyCode::Enter => {
+                            let target = playlist_cursor.get();
+                            let _ = s.switch_track(target);
+                            show_playlist.set(false);
+                        }
+                        KeyCode::Char('i') | KeyCode::Char('I') => {
+                            lang.set(lang.get().next());
+                        }
+                        KeyCode::Char(' ') => s.audio.toggle(),
+                        KeyCode::Char('q') | KeyCode::Char('Q') => should_exit.set(true),
+                        _ => {}
                     }
                 }
-                KeyCode::Enter => {
-                    let target = playlist_cursor.get();
-                    let _ = s.switch_track(target);
-                    show_playlist.set(false);
-                }
-                KeyCode::Char('i') | KeyCode::Char('I') => {
-                    lang.set(lang.get().next());
-                }
-                KeyCode::Char(' ') => s.audio.toggle(),
-                KeyCode::Char('q') | KeyCode::Char('Q') => should_exit.set(true),
-                _ => {}
             }
             return;
         }
 
         match code {
             KeyCode::Char('q') | KeyCode::Char('Q') | KeyCode::Esc => should_exit.set(true),
+            KeyCode::Char('f') | KeyCode::Char('F') => {
+                modal_tab.set(playlist_modal::ModalTab::Folders);
+                folder_cursor.set(0);
+                show_playlist.set(true);
+            }
             KeyCode::Char('l') | KeyCode::Char('L') => {
+                modal_tab.set(playlist_modal::ModalTab::Tracks);
                 playlist_cursor.set(*s.track_index.read().unwrap());
                 show_playlist.set(true);
             }
@@ -316,6 +455,7 @@ pub fn App(props: &AppProps, mut hooks: Hooks) -> impl Into<AnyElement<'static>>
     let s_select = session.clone();
 
     let modal_overlay = show_playlist.get().then(|| {
+        let input_str = folder_input.read().clone();
         element! {
             View(
                 position: Position::Absolute,
@@ -326,7 +466,11 @@ pub fn App(props: &AppProps, mut hooks: Hooks) -> impl Into<AnyElement<'static>>
             ) {
                 #(playlist_modal::render(
                     session.clone(),
+                    modal_tab.get(),
                     playlist_cursor.get(),
+                    folder_cursor.get(),
+                    is_adding_folder.get(),
+                    &input_str,
                     layout.box_width.saturating_sub(10),
                     current_lang,
                     &theme,
@@ -337,6 +481,9 @@ pub fn App(props: &AppProps, mut hooks: Hooks) -> impl Into<AnyElement<'static>>
                     },
                     move || {
                         show_playlist.set(false);
+                    },
+                    move |tab| {
+                        modal_tab.set(tab);
                     },
                 ))
             }

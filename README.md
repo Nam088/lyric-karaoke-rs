@@ -97,14 +97,19 @@ pub const LINE_SPACING: usize = 0;     // 0 = các dòng lyric liền kề, 1 = 
 | `[` hoặc `P` | Chuyển về Bài Hát Trước (Previous Track) |
 | `]` hoặc `O` | Chuyển sang Bài Hát Tiếp Theo (Next Track) |
 | `L` | Mở / Đóng Hộp Thoại Danh Sách Phát (Playlist Modal) |
-| `↑` / `↓` hoặc `J` / `K` | Di chuyển chọn bài hát trong Playlist Modal |
-| `Enter` | Phát ngay bài hát đang chọn trong Playlist Modal |
+| `F` | Mở Trực Tiếp Hộp Thoại Quản Lý Thư Mục (Folder Manager) |
+| `1` / `2` hoặc `T` / `F` | Chuyển Tab giữa **[1] Bài Hát (Tracks)** và **[2] Thư Mục (Folders)** |
+| `A` *(trong tab Folder)* | **Thêm Thư Mục Nhạc Mới**: Nhập đường dẫn thư mục và nhấn `Enter` để lưu vào SQLite |
+| `D` *(trong tab Folder)* | **Xóa Thư Mục**: Xóa thư mục đang chọn khỏi SQLite |
+| `R` *(trong tab Folder)* | **Quét Lại (Rescan)**: Quét lại tất cả thư mục để cập nhật bài hát mới nhất |
+| `↑` / `↓` hoặc `J` / `K` | Di chuyển chọn bài hát / chọn thư mục trong Modal |
+| `Enter` | Phát bài hát đang chọn / Xác nhận thêm thư mục |
 | `I` | Đổi Ngôn Ngữ i18n (`Tiếng Việt (VI)` ➔ `English (EN)`) |
 | `C` | Đổi Bảng Màu Theme Preset (`Emerald` ➔ `Cyberpunk` ➔ `Ocean` ➔ `Sunset` ➔ `Sakura` ➔ `Mono` ➔ `Light`) |
 | `S` | Đổi kiểu Visualizer Spectrum (`Curve` ➔ `Mirror` ➔ `Line` ➔ `Bars` ➔ `Off`) |
 | `N` | Bật / Tắt hiển thị Nốt nhạc (Pitch Detection & Cents offset) |
 | `H` | Bật / Tắt thanh hướng dẫn phím tắt ở header |
-| `Q` / `Esc` | Đóng Modal / Thoát ứng dụng |
+| `Q` / `Esc` | Đóng Modal / Hủy nhập / Thoát ứng dụng |
 
 ### Bằng chuột trên thanh Action Bar:
 * **`|◀◀` (Previous Track)**: Chuyển về bài hát trước đó trong Playlist.

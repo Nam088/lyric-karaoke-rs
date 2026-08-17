@@ -6,6 +6,7 @@
     "seek": "[←][→] ±5s",
     "track": "[[ ][]] Track",
     "list": "[L] List",
+    "folders": "[F] Folders",
     "spectrum": "spectrum",
     "theme": "theme",
     "note": "note",
@@ -14,9 +15,17 @@
   },
   "playlist": {
     "title": "PLAYLIST",
+    "folders_title": "MUSIC FOLDERS MANAGER (SQLITE)",
     "close": "[x] Close",
-    "footer_hints": "[↑/↓] Select  •  [Enter] Play  •  [Esc/L] Close",
-    "live_badge": "[LIVE]"
+    "footer_hints": "[↑/↓] Select  •  [Enter] Play  •  [F] Folders  •  [Esc/L] Close",
+    "folder_footer_hints": "[↑/↓] Select  •  [A] Add  •  [D] Delete  •  [R] Rescan  •  [T/Esc] Tracks",
+    "live_badge": "[LIVE]",
+    "tracks_tab": "Tracks",
+    "folders_tab": "Folders",
+    "add_folder_prompt": "Enter music directory path:",
+    "add_folder_hints": "[Enter] Save to SQLite  •  [Esc] Cancel",
+    "folder_empty": "No music folders configured.",
+    "folder_count": "tracks"
   },
   "player": {
     "no_lyrics": "♫ ♪ ♫  (Instrumental / No Lyrics Available)  ♫ ♪ ♫",
