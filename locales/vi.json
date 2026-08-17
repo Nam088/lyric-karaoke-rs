@@ -1,0 +1,25 @@
+{
+  "code": "vi",
+  "name": "Tiếng Việt",
+  "header": {
+    "play": "[Space] Phát",
+    "seek": "[←][→] ±5s",
+    "track": "[[ ][]] Bài",
+    "list": "[L] DS",
+    "spectrum": "phổ",
+    "theme": "theme",
+    "note": "nốt",
+    "lang": "Ngôn ngữ",
+    "quit": "[Q] Thoát"
+  },
+  "playlist": {
+    "title": "DANH SÁCH BÀI HÁT",
+    "close": "[x] Đóng",
+    "footer_hints": "[↑/↓] Chọn  •  [Enter] Phát  •  [Esc/L] Đóng",
+    "live_badge": "[LIVE]"
+  },
+  "status": {
+    "live": "● LIVE",
+    "paused": "■ TẠM DỪNG"
+  }
+}

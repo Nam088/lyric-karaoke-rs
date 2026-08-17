@@ -1,4 +1,7 @@
-//! Title, playback state, clock and the detected note.
+//! Header components.
+//!
+//! A live clock, the track duration, the playing / paused state, and a
+//! fundamental pitch readout when pitch analysis is turned on.
 
 use std::sync::Arc;
 
@@ -8,6 +11,7 @@ use super::Session;
 use crate::analysis::pitch::Note;
 use crate::color::{self, Theme, ThemePreset};
 use crate::config;
+use crate::i18n::Language;
 use crate::ui::footer::long_time;
 use crate::ui::spectrum::Style;
 
@@ -27,11 +31,12 @@ fn shimmer(now: i64, char_offset: usize, theme: &Theme) -> Color {
 fn status_label(
     is_playing: bool,
     now: i64,
+    lang: Language,
     theme: &Theme,
     session: Option<Arc<Session>>,
 ) -> AnyElement<'static> {
     let (content, color, bold) = if !is_playing {
-        (config::PAUSED_LABEL, theme.paused, false)
+        (lang.paused_label(), theme.paused, false)
     } else {
         let on = ((now as f64 / config::LIVE_BLINK_MS) as i64) % 2 == 0;
         let c = if on {
@@ -39,7 +44,7 @@ fn status_label(
         } else {
             color::fade(theme.live, 0.55, theme.dark_base)
         };
-        (config::LIVE_LABEL, c, true)
+        (lang.live_label(), c, true)
     };
 
     let weight = if bold { Weight::Bold } else { Weight::Normal };
@@ -68,7 +73,6 @@ fn note_label(note: Option<Note>, show: bool, theme: &Theme) -> Vec<AnyElement<'
     let (text, color) = match note {
         Some(n) => {
             let text = format!(" {:<3} {:+3}¢ ", n.name(), n.cents.round() as i32);
-            // Close to centre is note_label color, amber as it drifts.
             let off = (n.cents.abs() / 50.0).clamp(0.0, 1.0);
             (text, color::mix(theme.note_label, theme.paused, off))
         }
@@ -94,6 +98,7 @@ pub fn render(
     show_keybinds: bool,
     style: Style,
     theme_preset: ThemePreset,
+    lang: Language,
     theme: &Theme,
     session: Option<Arc<Session>>,
 ) -> AnyElement<'static> {
@@ -102,11 +107,7 @@ pub fn render(
             View(margin_left: 2) {
                 Text(
                     color: theme.keybinds_dim,
-                    content: format!(
-                        "[Space] Play  [←][→] ±5s  [[ ][]] Track  [L] list  [S] spectrum: {}  [C] theme: {}  [N] note  [Q] Quit",
-                        style.name(),
-                        theme_preset.name(),
-                    ),
+                    content: lang.keybinds_guide(style.name(), theme_preset.name()),
                 )
             }
         }
@@ -158,7 +159,7 @@ pub fn render(
                     }
                     .into()
                 }))
-                #(status_label(is_playing, position_ms, theme, session))
+                #(status_label(is_playing, position_ms, lang, theme, session))
                 Text(color: theme.remaining, content: config::VBAR)
                 Text(color: theme.elapsed, content: long_time(position_ms))
             }
@@ -196,7 +197,18 @@ mod tests {
 
     fn draw(note: Option<Note>) -> String {
         let theme = Theme::default();
-        let mut e = render(true, 62_000, note, true, false, Style::default(), ThemePreset::default(), &theme, None);
+        let mut e = render(
+            true,
+            62_000,
+            note,
+            true,
+            false,
+            Style::default(),
+            ThemePreset::default(),
+            Language::default(),
+            &theme,
+            None,
+        );
         let mut buf = Vec::new();
         e.render(Some(70)).write(&mut buf).unwrap();
         String::from_utf8_lossy(&buf).into_owned()
@@ -217,7 +229,18 @@ mod tests {
     #[test]
     fn hiding_the_note_leaves_nothing_behind() {
         let theme = Theme::default();
-        let mut e = render(true, 62_000, Some(pitch::from_hz(440.0)), false, false, Style::default(), ThemePreset::default(), &theme, None);
+        let mut e = render(
+            true,
+            62_000,
+            Some(pitch::from_hz(440.0)),
+            false,
+            false,
+            Style::default(),
+            ThemePreset::default(),
+            Language::default(),
+            &theme,
+            None,
+        );
         let mut buf = Vec::new();
         e.render(Some(70)).write(&mut buf).unwrap();
         let text = String::from_utf8_lossy(&buf).into_owned();
@@ -240,6 +263,17 @@ mod tests {
         assert_eq!(note_label(None, true, &theme).len(), 1);
         assert_eq!(note_label(Some(pitch::from_hz(440.0)), true, &theme).len(), 1);
         assert!(note_label(Some(pitch::from_hz(440.0)), false, &theme).is_empty());
-        let _ = render(true, 0, None, true, true, Style::default(), ThemePreset::default(), &theme, None);
+        let _ = render(
+            true,
+            0,
+            None,
+            true,
+            true,
+            Style::default(),
+            ThemePreset::default(),
+            Language::default(),
+            &theme,
+            None,
+        );
     }
 }

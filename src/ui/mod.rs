@@ -134,6 +134,7 @@ pub fn App(props: &AppProps, mut hooks: Hooks) -> impl Into<AnyElement<'static>>
     let mut render_past = hooks.use_state(|| config::RENDER_PAST_ON_START);
     let mut should_exit = hooks.use_state(|| false);
     let mut color_theme = hooks.use_state(|| config::DEFAULT_THEME);
+    let mut lang = hooks.use_state(crate::i18n::Language::default);
     // The config decides where the cycle starts; the S key moves it from there.
     let mut spectrum_style = hooks.use_state(|| {
         if config::SHOW_SPECTRUM {
@@ -208,6 +209,9 @@ pub fn App(props: &AppProps, mut hooks: Hooks) -> impl Into<AnyElement<'static>>
                     let _ = s.switch_track(target);
                     show_playlist.set(false);
                 }
+                KeyCode::Char('i') | KeyCode::Char('I') => {
+                    lang.set(lang.get().next());
+                }
                 KeyCode::Char(' ') => s.audio.toggle(),
                 KeyCode::Char('q') | KeyCode::Char('Q') => should_exit.set(true),
                 _ => {}
@@ -230,6 +234,9 @@ pub fn App(props: &AppProps, mut hooks: Hooks) -> impl Into<AnyElement<'static>>
             }
             KeyCode::Char('c') | KeyCode::Char('C') => {
                 color_theme.set(color_theme.get().next());
+            }
+            KeyCode::Char('i') | KeyCode::Char('I') => {
+                lang.set(lang.get().next());
             }
             KeyCode::Char('n') | KeyCode::Char('N') => {
                 let v = show_note.get();
@@ -270,6 +277,7 @@ pub fn App(props: &AppProps, mut hooks: Hooks) -> impl Into<AnyElement<'static>>
 
     let theme_preset = color_theme.get();
     let theme = theme_preset.theme();
+    let current_lang = lang.get();
 
     let layout =
         Layout::measure_with(term_w as usize, term_h as usize, spectrum_style.get().is_visible());
@@ -308,6 +316,7 @@ pub fn App(props: &AppProps, mut hooks: Hooks) -> impl Into<AnyElement<'static>>
                     session.clone(),
                     playlist_cursor.get(),
                     layout.box_width.saturating_sub(10),
+                    current_lang,
                     &theme,
                     move |idx| {
                         let _ = s_select.switch_track(idx);
@@ -348,6 +357,7 @@ pub fn App(props: &AppProps, mut hooks: Hooks) -> impl Into<AnyElement<'static>>
                     show_keybinds.get(),
                     spectrum_style.get(),
                     theme_preset,
+                    current_lang,
                     &theme,
                     Some(session.clone()),
                 ))

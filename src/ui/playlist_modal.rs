@@ -1,4 +1,4 @@
-//! Interactive Playlist Modal Dialog without emojis.
+//! Interactive Playlist Modal Dialog with i18n support.
 
 use std::sync::{Arc, Mutex};
 
@@ -6,11 +6,13 @@ use iocraft::prelude::*;
 
 use super::Session;
 use crate::color::Theme;
+use crate::i18n::Language;
 
 pub fn render<FSelect, FClose>(
     session: Arc<Session>,
     cursor: usize,
     width: usize,
+    lang: Language,
     theme: &Theme,
     on_select: FSelect,
     on_close: FClose,
@@ -81,7 +83,7 @@ where
                             Text(color: theme.remaining, content: artist)
                         }
                         #(is_current.then(|| element! {
-                            Text(color: theme.live, weight: Weight::Bold, content: " [LIVE] ")
+                            Text(color: theme.live, weight: Weight::Bold, content: format!(" {} ", lang.live_badge()))
                         }))
                     }
                 }
@@ -120,14 +122,14 @@ where
                 Text(
                     color: theme.highlight,
                     weight: Weight::Bold,
-                    content: format!(" DANH SÁCH BÀI HÁT ({})", playlist.len()),
+                    content: lang.playlist_title(playlist.len()),
                 )
                 Button(handler: move |_| {
                     if let Ok(mut f) = on_cls.lock() {
                         f();
                     }
                 }) {
-                    Text(color: theme.remaining, weight: Weight::Bold, content: "[x] Đóng ")
+                    Text(color: theme.remaining, weight: Weight::Bold, content: format!("{} ", lang.playlist_close_btn()))
                 }
             }
 
@@ -143,7 +145,7 @@ where
             ) {
                 Text(
                     color: theme.keybinds_dim,
-                    content: "[↑/↓] Chọn  •  [Enter] Phát  •  [Esc/L] Đóng",
+                    content: lang.playlist_footer_hints().to_string(),
                 )
             }
         }

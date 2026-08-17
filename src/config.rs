@@ -7,8 +7,6 @@
 // ── Strings ────────────────────────────────────────────────────────────
 
 pub const APP_NAME: &str = "Karaoke";
-pub const LIVE_LABEL: &str = "● LIVE";
-pub const PAUSED_LABEL: &str = "■ PAUSED";
 pub const SONG_NAME: &str = "Mùa Hè Năm Ấy";
 pub const SONG_FILE: &str = "c.mp3";
 pub const GAP_TEXT: &str = "♫  ♪  ♫  ♪  ♫  ♪  ♫";

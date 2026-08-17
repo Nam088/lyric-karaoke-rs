@@ -99,6 +99,7 @@ pub const LINE_SPACING: usize = 0;     // 0 = các dòng lyric liền kề, 1 = 
 | `L` | Mở / Đóng Hộp Thoại Danh Sách Phát (Playlist Modal) |
 | `↑` / `↓` hoặc `J` / `K` | Di chuyển chọn bài hát trong Playlist Modal |
 | `Enter` | Phát ngay bài hát đang chọn trong Playlist Modal |
+| `I` | Đổi Ngôn Ngữ i18n (`Tiếng Việt (VI)` ➔ `English (EN)`) |
 | `C` | Đổi Bảng Màu Theme Preset (`Emerald` ➔ `Cyberpunk` ➔ `Ocean` ➔ `Sunset` ➔ `Sakura` ➔ `Mono` ➔ `Light`) |
 | `S` | Đổi kiểu Visualizer Spectrum (`Curve` ➔ `Mirror` ➔ `Line` ➔ `Bars` ➔ `Off`) |
 | `N` | Bật / Tắt hiển thị Nốt nhạc (Pitch Detection & Cents offset) |
@@ -113,6 +114,16 @@ pub const LINE_SPACING: usize = 0;     // 0 = các dòng lyric liền kề, 1 = 
 * **`▶▶|` (Next Track)**: Chuyển sang bài hát tiếp theo trong Playlist.
 * **`☰` (Playlist Modal)**: Bật/tắt cửa sổ danh sách phát để click chọn bài trực quan.
 * **Click trực tiếp vào câu lyric hoặc thanh Timeline**: Tua nhanh đến đúng thời điểm mong muốn.
+
+---
+
+## 🌐 Đa Ngôn Ngữ (i18n Support qua JSON)
+
+Toàn bộ ngôn ngữ giao diện được cấu hình hoàn toàn độc lập qua các file JSON tại thư mục [`locales/`](locales/):
+* [`locales/vi.json`](locales/vi.json): Cấu hình tiếng Việt.
+* [`locales/en.json`](locales/en.json): Cấu hình tiếng Anh.
+
+Bấm phím **`I`** trong khi đang chạy để chuyển đổi ngôn ngữ tức thì!
 
 ---
 

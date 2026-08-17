@@ -10,6 +10,7 @@ mod audio;
 mod braille;
 mod color;
 mod config;
+mod i18n;
 mod lyrics;
 mod playlist;
 mod ui;

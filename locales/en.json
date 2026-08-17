@@ -1,0 +1,25 @@
+{
+  "code": "en",
+  "name": "English",
+  "header": {
+    "play": "[Space] Play",
+    "seek": "[←][→] ±5s",
+    "track": "[[ ][]] Track",
+    "list": "[L] List",
+    "spectrum": "spectrum",
+    "theme": "theme",
+    "note": "note",
+    "lang": "Lang",
+    "quit": "[Q] Quit"
+  },
+  "playlist": {
+    "title": "PLAYLIST",
+    "close": "[x] Close",
+    "footer_hints": "[↑/↓] Select  •  [Enter] Play  •  [Esc/L] Close",
+    "live_badge": "[LIVE]"
+  },
+  "status": {
+    "live": "● LIVE",
+    "paused": "■ PAUSED"
+  }
+}
