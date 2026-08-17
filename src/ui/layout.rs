@@ -59,15 +59,10 @@ impl Layout {
             .saturating_sub(2 + config::SAFE_MARGIN * 2)
             .min(config::MAX_BOX_WIDTH);
 
-        // Two border columns, five of padding either side, and one column
+        // Two border columns, horizontal padding either side, and one column
         // left spare.
-        //
-        // The spare column is the important part. Full width children that
-        // exactly fill the content area end up competing for the last one, and
-        // whichever loses gets squeezed to a single column and wraps once per
-        // character. That is how the panel has twice ended up hundreds of rows
-        // tall with nothing visible on screen.
-        let inner_width = box_width.saturating_sub(13).max(20);
+        let pad_cols = (config::PANEL_PADDING_X as usize) * 2;
+        let inner_width = box_width.saturating_sub(2 + pad_cols + 1).max(20);
 
         let mut l = Self {
             box_width,
@@ -265,10 +260,9 @@ mod tests {
     fn there_is_always_a_spare_column_inside_the_panel() {
         for w in [40usize, 60, 80, 100, 132, 200] {
             let l = Layout::measure_with(w, 40, true);
-            // Border and padding account for twelve columns; anything left
-            // over beyond inner_width is the slack.
+            let pad_and_border = 2 + (config::PANEL_PADDING_X as usize) * 2;
             assert!(
-                l.inner_width + 12 < l.box_width || l.box_width < 33,
+                l.inner_width + pad_and_border < l.box_width || l.box_width < 27,
                 "at {w} columns: inner {} fills box {} exactly",
                 l.inner_width,
                 l.box_width

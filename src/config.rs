@@ -92,20 +92,17 @@ pub const WAVEFORM_TIMELINE: bool = false;
 /// How many lyric lines are on screen at once. Must be odd so one sits dead
 /// centre.
 pub const WINDOW_SIZE: usize = 7;
-pub const MAX_BOX_WIDTH: usize = 120;
+pub const MAX_BOX_WIDTH: usize = 140;
 
 /// Blank rows between lyric lines (0 = compact/adjacent, 1 = empty row between each).
 pub const LINE_SPACING: usize = 1;
 
 /// Columns left empty either side of the panel.
-///
-/// Insurance against glyphs the terminal draws wider than the layout measured
-/// them. Musical notes, `●`, `◄`, `►` and `▌` are all East Asian Ambiguous:
-/// the width tables call them one column, and a terminal configured for CJK
-/// draws them as two. Filling right up to the edge means one such glyph wraps
-/// the line, which shifts every row below it and makes the next repaint land
-/// on the wrong rows.
-pub const SAFE_MARGIN: usize = 4;
+pub const SAFE_MARGIN: usize = 2;
+
+/// Horizontal padding inside the main frame (left & right).
+pub const PANEL_PADDING_X: u32 = 2;
+
 pub const TICKER_WIDTH_RATIO: f32 = 0.8;
 pub const TIMELINE_WIDTH_RATIO: f32 = 0.7;
 pub const SHOW_KEYBINDS: bool = false;

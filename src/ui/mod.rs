@@ -607,8 +607,8 @@ pub fn App(props: &AppProps, mut hooks: Hooks) -> impl Into<AnyElement<'static>>
                 flex_direction: FlexDirection::Column,
                 border_style: BorderStyle::Round,
                 border_color: theme.border,
-                padding_left: 5,
-                padding_right: 5,
+                padding_left: config::PANEL_PADDING_X,
+                padding_right: config::PANEL_PADDING_X,
                 padding_top: layout.padding_y(),
                 padding_bottom: layout.padding_y(),
                 width: layout.box_width as u32,
@@ -859,8 +859,8 @@ mod tests {
                     width: l.box_width as u32,
                     flex_direction: FlexDirection::Column,
                     align_items: AlignItems::Center,
-                    padding_left: 5,
-                    padding_right: 5,
+                    padding_left: config::PANEL_PADDING_X,
+                    padding_right: config::PANEL_PADDING_X,
                 ) {
                     Text(content: "─".repeat(l.inner_width))
                     #(spectrum::render(&a, l.inner_width, l.spectrum_rows, style, &theme))
@@ -924,8 +924,8 @@ mod tests {
                 width: l.box_width as u32,
                 flex_direction: FlexDirection::Column,
                 align_items: AlignItems::Center,
-                padding_left: 5,
-                padding_right: 5,
+                padding_left: config::PANEL_PADDING_X,
+                padding_right: config::PANEL_PADDING_X,
                 padding_top: l.padding_y(),
                 padding_bottom: l.padding_y(),
             ) {
