@@ -181,9 +181,9 @@ pub fn render(
         % config::MUSIC_NOTES.len()];
 
     let words: Vec<AnyElement<'static>> = if sentence.is_gap {
-        let alt = ((now as f64 / config::GAP_PATTERN_MS) as i64) % 2 == 0;
-        let pattern = if alt { config::GAP_TEXT } else { config::GAP_ALT_TEXT };
         if is_active {
+            let alt = ((now as f64 / config::GAP_PATTERN_MS) as i64) % 2 == 0;
+            let pattern = if alt { config::GAP_TEXT } else { config::GAP_ALT_TEXT };
             pattern
                 .chars()
                 .enumerate()
@@ -202,8 +202,13 @@ pub fn render(
                 })
                 .collect()
         } else {
-            let c = color::fade(theme.lyric_past, fade, theme.dark_base);
-            vec![span(pattern.to_string(), c, true)]
+            let base_color = if status == Status::Past {
+                theme.lyric_past
+            } else {
+                theme.lyric_future
+            };
+            let c = color::fade(base_color, fade, theme.dark_base);
+            vec![span(config::GAP_TEXT.to_string(), c, false)]
         }
     } else if !is_active {
         let base = if status == Status::Past {
