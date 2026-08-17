@@ -103,7 +103,7 @@ pub fn render(
                 Text(
                     color: theme.keybinds_dim,
                     content: format!(
-                        "[Space] Play  [←][→] ±5s  [[ ][]] Track  [S] spectrum: {}  [C] theme: {}  [N] note  [Q] Quit",
+                        "[Space] Play  [←][→] ±5s  [[ ][]] Track  [L] list  [S] spectrum: {}  [C] theme: {}  [N] note  [Q] Quit",
                         style.name(),
                         theme_preset.name(),
                     ),

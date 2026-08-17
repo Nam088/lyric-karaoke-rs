@@ -218,27 +218,50 @@ pub fn timeline(
     .into()
 }
 
+use std::sync::Mutex;
+
 /// Transport controls. Clickable in a terminal that reports mouse events, and
 /// mirrored by the keyboard either way.
-///
-/// The skip buttons move by lyric line rather than by track: there is only one
-/// song, and stepping through its lines is what a karaoke player is for.
-///
-/// Every button is the same fixed width, so the row does not twitch when the
-/// play glyph changes.
-pub fn transport(session: Arc<Session>, now: i64, is_playing: bool, theme: &Theme) -> AnyElement<'static> {
+pub fn transport<FToggle>(
+    session: Arc<Session>,
+    now: i64,
+    is_playing: bool,
+    theme: &Theme,
+    on_toggle_playlist: FToggle,
+) -> AnyElement<'static>
+where
+    FToggle: FnMut() + Send + 'static,
+{
     let (glyph, color) = if is_playing {
         ("▌▌", theme.live)
     } else {
         ("►", theme.paused)
     };
 
+    let prev_t = session.clone();
     let back = session.clone();
     let toggle = session.clone();
-    let forward = session;
+    let forward = session.clone();
+    let next_t = session;
+    let on_toggle = Arc::new(Mutex::new(on_toggle_playlist));
+    let on_t = on_toggle.clone();
 
     element! {
         View(justify_content: JustifyContent::Center, width: 100pct, margin_top: 1) {
+            // 1. Previous Track
+            Button(handler: move |_| {
+                let _ = prev_t.prev_track();
+            }) {
+                View(width: 6, justify_content: JustifyContent::Center) {
+                    Text(
+                        color: theme.remaining,
+                        weight: Weight::Bold,
+                        content: "|◀◀",
+                    )
+                }
+            }
+
+            // 2. Previous Lyric Line
             Button(handler: move |_| {
                 let sentences = back.sentences.read().unwrap();
                 let target = lyrics::previous_line_start(&sentences, now);
@@ -248,21 +271,23 @@ pub fn transport(session: Arc<Session>, now: i64, is_playing: bool, theme: &Them
                     back.audio.seek_ms(target);
                 }
             }) {
-                View(width: 8, justify_content: JustifyContent::Center) {
+                View(width: 6, justify_content: JustifyContent::Center) {
                     Text(
                         color: theme.remaining,
                         weight: Weight::Bold,
-                        content: "|\u{25c4}",
+                        content: "|◀",
                     )
                 }
             }
 
+            // 3. Play / Pause
             Button(handler: move |_| toggle.audio.toggle()) {
-                View(width: 8, justify_content: JustifyContent::Center) {
+                View(width: 6, justify_content: JustifyContent::Center) {
                     Text(color: color, weight: Weight::Bold, content: glyph)
                 }
             }
 
+            // 4. Next Lyric Line
             Button(handler: move |_| {
                 let sentences = forward.sentences.read().unwrap();
                 let target = lyrics::next_line_start(&sentences, now);
@@ -272,11 +297,39 @@ pub fn transport(session: Arc<Session>, now: i64, is_playing: bool, theme: &Them
                     forward.audio.seek_ms(target);
                 }
             }) {
-                View(width: 8, justify_content: JustifyContent::Center) {
+                View(width: 6, justify_content: JustifyContent::Center) {
                     Text(
                         color: theme.remaining,
                         weight: Weight::Bold,
-                        content: "\u{25ba}|",
+                        content: "▶|",
+                    )
+                }
+            }
+
+            // 5. Next Track
+            Button(handler: move |_| {
+                let _ = next_t.next_track();
+            }) {
+                View(width: 6, justify_content: JustifyContent::Center) {
+                    Text(
+                        color: theme.remaining,
+                        weight: Weight::Bold,
+                        content: "▶▶|",
+                    )
+                }
+            }
+
+            // 6. Playlist Modal Toggle
+            Button(handler: move |_| {
+                if let Ok(mut f) = on_t.lock() {
+                    f();
+                }
+            }) {
+                View(width: 6, justify_content: JustifyContent::Center) {
+                    Text(
+                        color: theme.highlight,
+                        weight: Weight::Bold,
+                        content: " ☰ ",
                     )
                 }
             }
@@ -445,20 +498,35 @@ mod click_tests {
         // Three columns of margin either side, so the edges of the hit regions
         // are somewhere real to aim at.
         element! {
-            View(width: 30u32, padding_left: 3, padding_right: 3) {
+            View(width: 42u32, padding_left: 3, padding_right: 3) {
                 Button(handler: mark(1)) {
-                    View(width: 8, justify_content: JustifyContent::Center) {
-                        Text(content: "|◄")
+                    View(width: 6, justify_content: JustifyContent::Center) {
+                        Text(content: "|◀◀")
                     }
                 }
                 Button(handler: mark(2)) {
-                    View(width: 8, justify_content: JustifyContent::Center) {
-                        Text(content: "▌▌")
+                    View(width: 6, justify_content: JustifyContent::Center) {
+                        Text(content: "|◀")
                     }
                 }
                 Button(handler: mark(3)) {
-                    View(width: 8, justify_content: JustifyContent::Center) {
-                        Text(content: "►|")
+                    View(width: 6, justify_content: JustifyContent::Center) {
+                        Text(content: "▌▌")
+                    }
+                }
+                Button(handler: mark(4)) {
+                    View(width: 6, justify_content: JustifyContent::Center) {
+                        Text(content: "▶|")
+                    }
+                }
+                Button(handler: mark(5)) {
+                    View(width: 6, justify_content: JustifyContent::Center) {
+                        Text(content: "▶▶|")
+                    }
+                }
+                Button(handler: mark(6)) {
+                    View(width: 6, justify_content: JustifyContent::Center) {
+                        Text(content: " ☰ ")
                     }
                 }
             }
@@ -485,23 +553,27 @@ mod click_tests {
         PRESSED.load(Ordering::SeqCst)
     }
 
-    /// Three margin columns, then three buttons of eight columns each, so they
-    /// occupy 3 to 10, 11 to 18 and 19 to 26.
     #[test]
     fn each_transport_button_answers_its_own_column() {
-        assert_eq!(click(3), 1, "skip back, first column");
-        assert_eq!(click(10), 1, "skip back, last column");
-        assert_eq!(click(11), 2, "play or pause, first column");
-        assert_eq!(click(18), 2, "play or pause, last column");
-        assert_eq!(click(19), 3, "skip forward, first column");
-        assert_eq!(click(26), 3, "skip forward, last column");
+        assert_eq!(click(3), 1, "track prev, first column");
+        assert_eq!(click(8), 1, "track prev, last column");
+        assert_eq!(click(9), 2, "line prev, first column");
+        assert_eq!(click(14), 2, "line prev, last column");
+        assert_eq!(click(15), 3, "play/pause, first column");
+        assert_eq!(click(20), 3, "play/pause, last column");
+        assert_eq!(click(21), 4, "line next, first column");
+        assert_eq!(click(26), 4, "line next, last column");
+        assert_eq!(click(27), 5, "track next, first column");
+        assert_eq!(click(32), 5, "track next, last column");
+        assert_eq!(click(33), 6, "playlist, first column");
+        assert_eq!(click(38), 6, "playlist, last column");
     }
 
     #[test]
     fn a_click_in_the_margins_does_nothing() {
         assert_eq!(click(0), 0, "the left margin is not a button");
         assert_eq!(click(2), 0, "the column before the first button is not one");
-        assert_eq!(click(27), 0, "the column after the last button is not one");
-        assert_eq!(click(29), 0, "the right margin is not a button");
+        assert_eq!(click(39), 0, "the column after the last button is not one");
+        assert_eq!(click(41), 0, "the right margin is not a button");
     }
 }

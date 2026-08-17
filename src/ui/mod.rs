@@ -10,6 +10,7 @@ pub mod footer;
 pub mod layout;
 pub mod header;
 pub mod lyric_line;
+pub mod playlist_modal;
 pub mod spectrum;
 
 use std::sync::{Arc, Mutex, RwLock};
@@ -128,6 +129,8 @@ pub fn App(props: &AppProps, mut hooks: Hooks) -> impl Into<AnyElement<'static>>
     let mut frame = hooks.use_state(|| 0u64);
     let mut show_keybinds = hooks.use_state(|| config::SHOW_KEYBINDS);
     let mut show_note = hooks.use_state(|| config::SHOW_NOTE);
+    let mut show_playlist = hooks.use_state(|| false);
+    let mut playlist_cursor = hooks.use_state(|| *session.track_index.read().unwrap());
     let mut render_past = hooks.use_state(|| config::RENDER_PAST_ON_START);
     let mut should_exit = hooks.use_state(|| false);
     let mut color_theme = hooks.use_state(|| config::DEFAULT_THEME);
@@ -178,8 +181,46 @@ pub fn App(props: &AppProps, mut hooks: Hooks) -> impl Into<AnyElement<'static>>
             return;
         }
 
+        let is_modal = show_playlist.get();
+        if is_modal {
+            match code {
+                KeyCode::Esc | KeyCode::Char('l') | KeyCode::Char('L') => {
+                    show_playlist.set(false);
+                }
+                KeyCode::Up | KeyCode::Char('k') | KeyCode::Char('K') => {
+                    let p_len = s.playlist.read().unwrap().len();
+                    if p_len > 0 {
+                        let curr = playlist_cursor.get();
+                        let prev = if curr == 0 { p_len - 1 } else { curr - 1 };
+                        playlist_cursor.set(prev);
+                    }
+                }
+                KeyCode::Down | KeyCode::Char('j') | KeyCode::Char('J') => {
+                    let p_len = s.playlist.read().unwrap().len();
+                    if p_len > 0 {
+                        let curr = playlist_cursor.get();
+                        let next = (curr + 1) % p_len;
+                        playlist_cursor.set(next);
+                    }
+                }
+                KeyCode::Enter => {
+                    let target = playlist_cursor.get();
+                    let _ = s.switch_track(target);
+                    show_playlist.set(false);
+                }
+                KeyCode::Char(' ') => s.audio.toggle(),
+                KeyCode::Char('q') | KeyCode::Char('Q') => should_exit.set(true),
+                _ => {}
+            }
+            return;
+        }
+
         match code {
             KeyCode::Char('q') | KeyCode::Char('Q') | KeyCode::Esc => should_exit.set(true),
+            KeyCode::Char('l') | KeyCode::Char('L') => {
+                playlist_cursor.set(*s.track_index.read().unwrap());
+                show_playlist.set(true);
+            }
             KeyCode::Char('h') | KeyCode::Char('H') => {
                 let v = show_keybinds.get();
                 show_keybinds.set(!v);
@@ -251,6 +292,39 @@ pub fn App(props: &AppProps, mut hooks: Hooks) -> impl Into<AnyElement<'static>>
     let track_display = session.current_track.read().unwrap().display_name();
     let envelope = session.envelope.read().unwrap().clone();
 
+    let center_content = if show_playlist.get() {
+        let s = session.clone();
+        playlist_modal::render(
+            session.clone(),
+            playlist_cursor.get(),
+            layout.box_width.saturating_sub(10),
+            &theme,
+            move |idx| {
+                let _ = s.switch_track(idx);
+                playlist_cursor.set(idx);
+                show_playlist.set(false);
+            },
+            move || {
+                show_playlist.set(false);
+            },
+        )
+    } else {
+        element! {
+            View(
+                flex_direction: FlexDirection::Column,
+                align_items: AlignItems::Center,
+                width: 100pct,
+                margin_top: layout.lyric_margin(),
+                margin_bottom: layout.lyric_margin(),
+            ) {
+                #(lines)
+            }
+        }
+        .into()
+    };
+
+    let s_toggle = session.clone();
+
     element! {
         View(
             width: term_w,
@@ -282,15 +356,7 @@ pub fn App(props: &AppProps, mut hooks: Hooks) -> impl Into<AnyElement<'static>>
                 ))
                 #(rule(&layout, &theme))
 
-                View(
-                    flex_direction: FlexDirection::Column,
-                    align_items: AlignItems::Center,
-                    width: 100pct,
-                    margin_top: layout.lyric_margin(),
-                    margin_bottom: layout.lyric_margin(),
-                ) {
-                    #(lines)
-                }
+                #(center_content)
 
                 #(rule(&layout, &theme))
 
@@ -320,7 +386,19 @@ pub fn App(props: &AppProps, mut hooks: Hooks) -> impl Into<AnyElement<'static>>
                         Some(session.clone()),
                     ))
                     #(layout.show_transport
-                        .then(|| footer::transport(session.clone(), now, is_playing, &theme)))
+                        .then(|| footer::transport(
+                            session.clone(),
+                            now,
+                            is_playing,
+                            &theme,
+                            move || {
+                                let v = show_playlist.get();
+                                if !v {
+                                    playlist_cursor.set(*s_toggle.track_index.read().unwrap());
+                                }
+                                show_playlist.set(!v);
+                            },
+                        )))
                 }
             }
         }
