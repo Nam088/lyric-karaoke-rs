@@ -1421,38 +1421,38 @@
             {
                 "words": [
                     {
-                        "startTime": 168530,
-                        "endTime": 169480,
+                        "startTime": 181500,
+                        "endTime": 182000,
                         "data": "Chỉ"
                     },
                     {
-                        "startTime": 169480,
-                        "endTime": 169660,
+                        "startTime": 182000,
+                        "endTime": 182490,
                         "data": "vì"
                     },
                     {
-                        "startTime": 170350,
-                        "endTime": 170400,
+                        "startTime": 182490,
+                        "endTime": 183000,
                         "data": "một"
                     },
                     {
-                        "startTime": 170400,
-                        "endTime": 170580,
+                        "startTime": 183000,
+                        "endTime": 183440,
                         "data": "người"
                     },
                     {
-                        "startTime": 170580,
-                        "endTime": 170760,
+                        "startTime": 183440,
+                        "endTime": 183720,
                         "data": "không"
                     },
                     {
-                        "startTime": 170760,
-                        "endTime": 170940,
+                        "startTime": 183720,
+                        "endTime": 184180,
                         "data": "xứng"
                     },
                     {
-                        "startTime": 170940,
-                        "endTime": 171120,
+                        "startTime": 184180,
+                        "endTime": 185680,
                         "data": "đáng"
                     }
                 ]
@@ -1460,38 +1460,38 @@
             {
                 "words": [
                     {
-                        "startTime": 171110,
-                        "endTime": 171290,
+                        "startTime": 186140,
+                        "endTime": 186500,
                         "data": "Mà"
                     },
                     {
-                        "startTime": 171730,
-                        "endTime": 171780,
+                        "startTime": 186500,
+                        "endTime": 186980,
                         "data": "người"
                     },
                     {
-                        "startTime": 171780,
-                        "endTime": 171960,
+                        "startTime": 186980,
+                        "endTime": 187420,
                         "data": "làm"
                     },
                     {
-                        "startTime": 171960,
-                        "endTime": 172140,
+                        "startTime": 187420,
+                        "endTime": 187860,
                         "data": "lòng"
                     },
                     {
-                        "startTime": 172140,
-                        "endTime": 172320,
+                        "startTime": 187860,
+                        "endTime": 188300,
                         "data": "anh"
                     },
                     {
-                        "startTime": 172320,
-                        "endTime": 172500,
+                        "startTime": 188300,
+                        "endTime": 188800,
                         "data": "vỡ"
                     },
                     {
-                        "startTime": 172500,
-                        "endTime": 172680,
+                        "startTime": 188800,
+                        "endTime": 190500,
                         "data": "tan"
                     }
                 ]
@@ -1499,53 +1499,53 @@
             {
                 "words": [
                     {
-                        "startTime": 191180,
-                        "endTime": 191960,
+                        "startTime": 191400,
+                        "endTime": 191900,
                         "data": "Người"
                     },
                     {
-                        "startTime": 191960,
-                        "endTime": 192220,
+                        "startTime": 191900,
+                        "endTime": 192300,
                         "data": "đã"
                     },
                     {
-                        "startTime": 192220,
-                        "endTime": 192720,
+                        "startTime": 192300,
+                        "endTime": 192700,
                         "data": "từng"
                     },
                     {
-                        "startTime": 192720,
-                        "endTime": 193140,
+                        "startTime": 192700,
+                        "endTime": 193100,
                         "data": "hứa"
                     },
                     {
-                        "startTime": 193140,
-                        "endTime": 193360,
+                        "startTime": 193100,
+                        "endTime": 193340,
                         "data": "luôn"
                     },
                     {
-                        "startTime": 193360,
-                        "endTime": 193680,
+                        "startTime": 193340,
+                        "endTime": 193640,
                         "data": "vì"
                     },
                     {
-                        "startTime": 193680,
-                        "endTime": 194180,
+                        "startTime": 193640,
+                        "endTime": 194080,
                         "data": "em"
                     },
                     {
-                        "startTime": 194180,
-                        "endTime": 194440,
+                        "startTime": 194080,
+                        "endTime": 194420,
                         "data": "yêu"
                     },
                     {
-                        "startTime": 194440,
+                        "startTime": 194420,
                         "endTime": 194800,
                         "data": "hết"
                     },
                     {
                         "startTime": 194800,
-                        "endTime": 195440,
+                        "endTime": 195500,
                         "data": "lòng"
                     }
                 ]
@@ -1553,7 +1553,7 @@
             {
                 "words": [
                     {
-                        "startTime": 195440,
+                        "startTime": 196000,
                         "endTime": 196240,
                         "data": "Để"
                     },
@@ -1569,11 +1569,11 @@
                     },
                     {
                         "startTime": 196820,
-                        "endTime": 197280,
+                        "endTime": 197300,
                         "data": "anh"
                     },
                     {
-                        "startTime": 197280,
+                        "startTime": 197300,
                         "endTime": 197580,
                         "data": "ta"
                     },
@@ -1584,22 +1584,22 @@
                     },
                     {
                         "startTime": 197820,
-                        "endTime": 198440,
+                        "endTime": 198300,
                         "data": "ôm"
                     },
                     {
-                        "startTime": 198440,
-                        "endTime": 198660,
+                        "startTime": 198300,
+                        "endTime": 198680,
                         "data": "lấy"
                     },
                     {
-                        "startTime": 198660,
-                        "endTime": 198980,
+                        "startTime": 198680,
+                        "endTime": 198960,
                         "data": "em"
                     },
                     {
-                        "startTime": 198980,
-                        "endTime": 199780,
+                        "startTime": 198960,
+                        "endTime": 199300,
                         "data": "không?"
                     }
                 ]
@@ -1608,11 +1608,11 @@
                 "words": [
                     {
                         "startTime": 199900,
-                        "endTime": 200040,
+                        "endTime": 200140,
                         "data": "Chẳng"
                     },
                     {
-                        "startTime": 200040,
+                        "startTime": 200140,
                         "endTime": 200400,
                         "data": "thể"
                     },
@@ -1628,7 +1628,7 @@
                     },
                     {
                         "startTime": 201220,
-                        "endTime": 201880,
+                        "endTime": 202000,
                         "data": "nữa"
                     }
                 ]
@@ -1636,43 +1636,43 @@
             {
                 "words": [
                     {
-                        "startTime": 202940,
-                        "endTime": 204040,
+                        "startTime": 203420,
+                        "endTime": 203980,
                         "data": "Từng"
                     },
                     {
-                        "startTime": 204040,
-                        "endTime": 204260,
+                        "startTime": 203980,
+                        "endTime": 204500,
                         "data": "mù"
                     },
                     {
-                        "startTime": 204260,
-                        "endTime": 204720,
+                        "startTime": 204500,
+                        "endTime": 204740,
                         "data": "quáng"
                     },
                     {
-                        "startTime": 204720,
+                        "startTime": 204740,
                         "endTime": 204960,
                         "data": "tin"
                     },
                     {
                         "startTime": 204960,
-                        "endTime": 205360,
+                        "endTime": 205500,
                         "data": "hết"
                     },
                     {
-                        "startTime": 205360,
-                        "endTime": 205860,
+                        "startTime": 205500,
+                        "endTime": 206000,
                         "data": "bao"
                     },
                     {
-                        "startTime": 205860,
-                        "endTime": 206460,
+                        "startTime": 206000,
+                        "endTime": 206260,
                         "data": "dối"
                     },
                     {
-                        "startTime": 206760,
-                        "endTime": 207760,
+                        "startTime": 206260,
+                        "endTime": 207200,
                         "data": "lừa"
                     }
                 ]
@@ -1680,53 +1680,53 @@
             {
                 "words": [
                     {
-                        "startTime": 207900,
+                        "startTime": 208160,
                         "endTime": 208900,
                         "data": "Thà"
                     },
                     {
                         "startTime": 208900,
-                        "endTime": 209300,
+                        "endTime": 209320,
                         "data": "em"
                     },
                     {
-                        "startTime": 209300,
-                        "endTime": 209640,
+                        "startTime": 209320,
+                        "endTime": 209620,
                         "data": "đừng"
                     },
                     {
-                        "startTime": 209640,
-                        "endTime": 210020,
+                        "startTime": 209620,
+                        "endTime": 209980,
                         "data": "hứa"
                     },
                     {
-                        "startTime": 210020,
-                        "endTime": 210280,
+                        "startTime": 209980,
+                        "endTime": 210340,
                         "data": "để"
                     },
                     {
-                        "startTime": 210280,
-                        "endTime": 210740,
+                        "startTime": 210340,
+                        "endTime": 210800,
                         "data": "anh"
                     },
                     {
-                        "startTime": 210740,
-                        "endTime": 211020,
+                        "startTime": 210800,
+                        "endTime": 211300,
                         "data": "mãi"
                     },
                     {
-                        "startTime": 211020,
-                        "endTime": 211340,
+                        "startTime": 211300,
+                        "endTime": 211700,
                         "data": "không"
                     },
                     {
-                        "startTime": 211340,
-                        "endTime": 211620,
+                        "startTime": 211700,
+                        "endTime": 212020,
                         "data": "hi"
                     },
                     {
-                        "startTime": 211620,
-                        "endTime": 212500,
+                        "startTime": 212020,
+                        "endTime": 212800,
                         "data": "vọng"
                     }
                 ]
@@ -1734,53 +1734,53 @@
             {
                 "words": [
                     {
-                        "startTime": 212500,
-                        "endTime": 213260,
-                        "data": "Trao"
-                    },
-                    {
-                        "startTime": 213260,
-                        "endTime": 213420,
-                        "data": "đi"
-                    },
-                    {
-                        "startTime": 213420,
+                        "startTime": 213380,
                         "endTime": 213740,
-                        "data": "mọi"
+                        "data": "Trao"
                     },
                     {
                         "startTime": 213740,
                         "endTime": 214080,
-                        "data": "thứ"
+                        "data": "đi"
                     },
                     {
                         "startTime": 214080,
-                        "endTime": 214480,
-                        "data": "nhưng"
+                        "endTime": 214460,
+                        "data": "mọi"
                     },
                     {
-                        "startTime": 214480,
+                        "startTime": 214460,
                         "endTime": 214800,
-                        "data": "mà"
+                        "data": "thứ"
                     },
                     {
                         "startTime": 214800,
-                        "endTime": 215240,
-                        "data": "trái"
+                        "endTime": 215220,
+                        "data": "nhưng"
                     },
                     {
-                        "startTime": 215240,
+                        "startTime": 215220,
                         "endTime": 215540,
-                        "data": "tim"
+                        "data": "mà"
                     },
                     {
                         "startTime": 215540,
-                        "endTime": 215880,
+                        "endTime": 215800,
+                        "data": "trái"
+                    },
+                    {
+                        "startTime": 215800,
+                        "endTime": 216100,
+                        "data": "tim"
+                    },
+                    {
+                        "startTime": 216100,
+                        "endTime": 216300,
                         "data": "em"
                     },
                     {
-                        "startTime": 215880,
-                        "endTime": 216380,
+                        "startTime": 216300,
+                        "endTime": 216800,
                         "data": "đâu"
                     }
                 ]
@@ -1788,13 +1788,13 @@
             {
                 "words": [
                     {
-                        "startTime": 216730,
-                        "endTime": 217580,
+                        "startTime": 217100,
+                        "endTime": 218500,
                         "data": "\"trân"
                     },
                     {
-                        "startTime": 217580,
-                        "endTime": 218430,
+                        "startTime": 218500,
+                        "endTime": 221000,
                         "data": "trọng\""
                     }
                 ]
