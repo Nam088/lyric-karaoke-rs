@@ -96,19 +96,23 @@ pub const LINE_SPACING: usize = 0;     // 0 = các dòng lyric liền kề, 1 = 
 | `←` / `→` | Tua lùi / Tua tới 5 giây (±5s) |
 | `[` hoặc `P` | Chuyển về Bài Hát Trước (Previous Track) |
 | `]` hoặc `O` | Chuyển sang Bài Hát Tiếp Theo (Next Track) |
+| `L` | Mở / Đóng Hộp Thoại Danh Sách Phát (Playlist Modal) |
+| `↑` / `↓` hoặc `J` / `K` | Di chuyển chọn bài hát trong Playlist Modal |
+| `Enter` | Phát ngay bài hát đang chọn trong Playlist Modal |
 | `C` | Đổi Bảng Màu Theme Preset (`Emerald` ➔ `Cyberpunk` ➔ `Ocean` ➔ `Sunset` ➔ `Sakura` ➔ `Mono` ➔ `Light`) |
 | `S` | Đổi kiểu Visualizer Spectrum (`Curve` ➔ `Mirror` ➔ `Line` ➔ `Bars` ➔ `Off`) |
 | `N` | Bật / Tắt hiển thị Nốt nhạc (Pitch Detection & Cents offset) |
 | `H` | Bật / Tắt thanh hướng dẫn phím tắt ở header |
-| `Q` / `Esc` | Thoát ứng dụng |
+| `Q` / `Esc` | Đóng Modal / Thoát ứng dụng |
 
-### Bằng chuột:
-* **Click vào bất kỳ dòng lyric nào**: Lập tức tua đến câu hát đó.
-* **Click vào nút `|◄`**: Tua về đầu câu/bài hát, hoặc lùi về bài trước.
-* **Click vào nút `▌▌` / `►`**: Play / Pause.
-* **Click vào nút `►|`**: Nhảy sang câu hát tiếp theo hoặc chuyển bài.
-* **Click vào thanh Timeline**: Nhảy ngay đến vị trí mong muốn.
-* **Click vào chữ `● LIVE` / `⏸ PAUSED`**: Play / Pause.
+### Bằng chuột trên thanh Action Bar:
+* **`|◀◀` (Previous Track)**: Chuyển về bài hát trước đó trong Playlist.
+* **`|◀` (Previous Line)**: Tua về đầu câu hát / bài hát.
+* **`▌▌` / `►` (Play / Pause)**: Phát hoặc tạm dừng bài hát.
+* **`▶|` (Next Line)**: Nhảy nhanh sang câu hát tiếp theo.
+* **`▶▶|` (Next Track)**: Chuyển sang bài hát tiếp theo trong Playlist.
+* **`☰` (Playlist Modal)**: Bật/tắt cửa sổ danh sách phát để click chọn bài trực quan.
+* **Click trực tiếp vào câu lyric hoặc thanh Timeline**: Tua nhanh đến đúng thời điểm mong muốn.
 
 ---
 
