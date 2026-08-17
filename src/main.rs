@@ -11,7 +11,7 @@ mod lyrics;
 mod playlist;
 mod ui;
 
-use std::path::{Path, PathBuf};
+use std::path::PathBuf;
 use std::sync::Arc;
 
 use anyhow::{Context, Result};
@@ -80,19 +80,14 @@ fn load() -> Result<Arc<Session>> {
             tracks: scanned_tracks,
         }
     } else {
-        let playlist_path = Path::new(config::DATA_DIR).join(config::PLAYLIST_FILE);
-        if playlist_path.exists() {
-            Playlist::load(&playlist_path)?
-        } else {
-            Playlist {
-                tracks: vec![Track {
-                    id: "default".into(),
-                    title: config::SONG_NAME.into(),
-                    artist: "Unknown Artist".into(),
-                    audio: config::SONG_FILE.into(),
-                    lyrics: config::LYRIC_JSON.into(),
-                }],
-            }
+        Playlist {
+            tracks: vec![Track {
+                id: "default".into(),
+                title: config::SONG_NAME.into(),
+                artist: "Unknown Artist".into(),
+                audio: config::SONG_FILE.into(),
+                lyrics: config::LYRIC_JSON.into(),
+            }],
         }
     };
 

@@ -35,6 +35,7 @@ pub struct Playlist {
 }
 
 impl Playlist {
+    #[allow(dead_code)]
     pub fn load(path: impl AsRef<Path>) -> Result<Self> {
         let path = path.as_ref();
         if !path.exists() {

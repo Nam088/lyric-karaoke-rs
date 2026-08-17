@@ -130,17 +130,6 @@ pub fn scan_folder_for_tracks(folder: impl AsRef<Path>) -> Result<Vec<Track>> {
         return Ok(Vec::new());
     }
 
-    // Check if playlist.json exists in this folder for optional predefined metadata
-    let playlist_manifest = folder.join("playlist.json");
-    let predefined_tracks: Vec<Track> = if playlist_manifest.exists() {
-        std::fs::read_to_string(&playlist_manifest)
-            .ok()
-            .and_then(|raw| serde_json::from_str(&raw).ok())
-            .unwrap_or_default()
-    } else {
-        Vec::new()
-    };
-
     let entries = std::fs::read_dir(folder)
         .with_context(|| format!("reading directory {}", folder.display()))?;
 
@@ -162,48 +151,19 @@ pub fn scan_folder_for_tracks(folder: impl AsRef<Path>) -> Result<Vec<Track>> {
             continue;
         }
 
-        let file_name = path
-            .file_name()
-            .and_then(|n| n.to_str())
-            .unwrap_or_default();
         let stem = path
             .file_stem()
             .and_then(|s| s.to_str())
             .unwrap_or_default();
 
-        // Check if predefined in playlist.json
-        let predefined = predefined_tracks.iter().find(|t| {
-            t.audio == file_name || Path::new(&t.audio).file_name().and_then(|f| f.to_str()) == Some(file_name)
-        });
-
-        let (title, artist, id) = if let Some(p) = predefined {
-            (p.title.clone(), p.artist.clone(), p.id.clone())
-        } else {
-            let (t, a) = parse_title_and_artist(stem);
-            let safe_id = stem.to_lowercase().replace([' ', '_', '.'], "-");
-            (t, a, safe_id)
-        };
+        let (title, artist) = parse_title_and_artist(stem);
+        let id = stem.to_lowercase().replace([' ', '_', '.'], "-");
 
         // Detect matching lyrics file in the same folder (.json or .lrc)
         let json_lyric = folder.join(format!("{}.json", stem));
         let lrc_lyric = folder.join(format!("{}.lrc", stem));
 
-        let lyrics_path = if let Some(p) = predefined {
-            if !p.lyrics.is_empty() {
-                let candidate = if Path::new(&p.lyrics).is_absolute() {
-                    PathBuf::from(&p.lyrics)
-                } else {
-                    folder.join(&p.lyrics)
-                };
-                if candidate.exists() {
-                    candidate.to_string_lossy().to_string()
-                } else {
-                    String::new()
-                }
-            } else {
-                String::new()
-            }
-        } else if json_lyric.exists() {
+        let lyrics_path = if json_lyric.exists() {
             json_lyric.to_string_lossy().to_string()
         } else if lrc_lyric.exists() {
             lrc_lyric.to_string_lossy().to_string()

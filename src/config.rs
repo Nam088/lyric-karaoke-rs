@@ -128,6 +128,5 @@ pub const SPECTRUM_ROWS: usize = 4;
 
 // ── Paths ──────────────────────────────────────────────────────────────
 
-pub const PLAYLIST_FILE: &str = "playlist.json";
 pub const LYRIC_JSON: &str = "data/lr.json";
 pub const DATA_DIR: &str = "data";
