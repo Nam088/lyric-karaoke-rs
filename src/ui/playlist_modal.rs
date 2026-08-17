@@ -1,4 +1,4 @@
-//! Interactive Playlist & Music Folders Manager Modal Dialog with dynamic Pagination & Table Layout.
+//! Interactive Playlist & Music Folders Manager Modal Dialog with dynamic Pagination & clean Table Layout.
 
 use std::sync::{Arc, Mutex};
 
@@ -107,7 +107,7 @@ where
     let track_start = track_page * PAGE_SIZE;
     let track_end = (track_start + PAGE_SIZE).min(total_tracks);
 
-    // ── Tab 1: Paginated Tracks Table Button Rows ──
+    // ── Tab 1: Paginated Tracks Table Button Rows (Clean, no box clutter) ──
     let track_rows: Vec<AnyElement<'static>> = if total_tracks == 0 {
         vec![element! {
             Text(color: theme.paused, content: " (Danh sách bài hát trống)")
@@ -160,8 +160,6 @@ where
                             padding_right: 1,
                             width: 100pct,
                             justify_content: JustifyContent::SpaceBetween,
-                            border_style: if is_selected { BorderStyle::Single } else { BorderStyle::None },
-                            border_color: if is_selected { theme.highlight } else { Color::Reset },
                         ) {
                             View(flex_direction: FlexDirection::Row) {
                                 Text(color: if is_current { theme.live } else { theme.elapsed }, weight: weight, content: no_col)
@@ -243,8 +241,6 @@ where
                         padding_right: 1,
                         width: 100pct,
                         justify_content: JustifyContent::SpaceBetween,
-                        border_style: if is_selected { BorderStyle::Single } else { BorderStyle::None },
-                        border_color: if is_selected { theme.highlight } else { Color::Reset },
                     ) {
                         Button(handler: move |_| {
                             if let Ok(mut f) = on_sel_f.lock() {
@@ -262,14 +258,7 @@ where
                                 f(idx);
                             }
                         }) {
-                            View(
-                                border_style: BorderStyle::Single,
-                                border_color: theme.paused,
-                                padding_left: 1,
-                                padding_right: 1,
-                            ) {
-                                Text(color: theme.paused, weight: Weight::Bold, content: lang.btn_delete().to_string())
-                            }
+                            Text(color: theme.paused, weight: Weight::Bold, content: format!(" {} ", lang.btn_delete()))
                         }
                     }
                 }
@@ -307,7 +296,7 @@ where
             width: (width.min(94)) as u32,
             align_items: AlignItems::Center,
         ) {
-            // Header Bar with Tab Buttons and Close Button
+            // Header Bar with Clean Flat Tab Buttons and Close Button
             View(
                 flex_direction: FlexDirection::Row,
                 justify_content: JustifyContent::SpaceBetween,
@@ -320,38 +309,25 @@ where
                             f(ModalTab::Tracks);
                         }
                     }) {
-                        View(
-                            border_style: BorderStyle::Single,
-                            border_color: tab_tracks_color,
-                            padding_left: 1,
-                            padding_right: 1,
-                            margin_right: 1,
-                        ) {
-                            Text(
-                                color: tab_tracks_color,
-                                weight: if tab == ModalTab::Tracks { Weight::Bold } else { Weight::Normal },
-                                content: format!("[1] {} ({})", lang.tracks_tab(), playlist.len()),
-                            )
-                        }
+                        Text(
+                            color: tab_tracks_color,
+                            weight: if tab == ModalTab::Tracks { Weight::Bold } else { Weight::Normal },
+                            content: format!(" [1] {} ({}) ", lang.tracks_tab(), playlist.len()),
+                        )
                     }
+
+                    Text(color: theme.remaining, content: "│")
 
                     Button(handler: move |_| {
                         if let Ok(mut f) = on_tab_f.lock() {
                             f(ModalTab::Folders);
                         }
                     }) {
-                        View(
-                            border_style: BorderStyle::Single,
-                            border_color: tab_folders_color,
-                            padding_left: 1,
-                            padding_right: 1,
-                        ) {
-                            Text(
-                                color: tab_folders_color,
-                                weight: if tab == ModalTab::Folders { Weight::Bold } else { Weight::Normal },
-                                content: format!("[2] {} (SQL: {})", lang.folders_tab(), folders.len()),
-                            )
-                        }
+                        Text(
+                            color: tab_folders_color,
+                            weight: if tab == ModalTab::Folders { Weight::Bold } else { Weight::Normal },
+                            content: format!(" [2] {} ({}) ", lang.folders_tab(), folders.len()),
+                        )
                     }
                 }
 
@@ -360,14 +336,7 @@ where
                         f();
                     }
                 }) {
-                    View(
-                        border_style: BorderStyle::Single,
-                        border_color: theme.remaining,
-                        padding_left: 1,
-                        padding_right: 1,
-                    ) {
-                        Text(color: theme.remaining, weight: Weight::Bold, content: lang.playlist_close_btn().to_string())
-                    }
+                    Text(color: theme.remaining, weight: Weight::Bold, content: format!("{} ", lang.playlist_close_btn()))
                 }
             }
 
@@ -378,35 +347,21 @@ where
                         flex_direction: FlexDirection::Row,
                         width: 100pct,
                         margin_bottom: 1,
+                        padding_left: 1,
                     ) {
                         Button(handler: move |_| {
                             if let Ok(mut f) = on_add_btn.lock() {
                                 f();
                             }
                         }) {
-                            View(
-                                border_style: BorderStyle::Single,
-                                border_color: theme.highlight,
-                                padding_left: 1,
-                                padding_right: 1,
-                                margin_right: 1,
-                            ) {
-                                Text(color: theme.highlight, weight: Weight::Bold, content: lang.btn_add_folder().to_string())
-                            }
+                            Text(color: theme.highlight, weight: Weight::Bold, content: format!("{}   ", lang.btn_add_folder()))
                         }
                         Button(handler: move |_| {
                             if let Ok(mut f) = on_rescan_btn.lock() {
                                 f();
                             }
                         }) {
-                            View(
-                                border_style: BorderStyle::Single,
-                                border_color: theme.lyric_singing,
-                                padding_left: 1,
-                                padding_right: 1,
-                            ) {
-                                Text(color: theme.lyric_singing, weight: Weight::Bold, content: lang.btn_rescan().to_string())
-                            }
+                            Text(color: theme.lyric_singing, weight: Weight::Bold, content: lang.btn_rescan().to_string())
                         }
                     }
                 })
@@ -494,7 +449,7 @@ where
                 })
             }
 
-            // Pagination Controls Bar
+            // Pagination Controls Bar (Clean & Flat)
             #(if !is_adding_folder && total_p > 1 {
                 Some(element! {
                     View(
@@ -511,14 +466,7 @@ where
                                 f();
                             }
                         }) {
-                            View(
-                                border_style: BorderStyle::Single,
-                                border_color: theme.remaining,
-                                padding_left: 1,
-                                padding_right: 1,
-                            ) {
-                                Text(color: theme.highlight, weight: Weight::Bold, content: lang.btn_prev_page().to_string())
-                            }
+                            Text(color: theme.highlight, weight: Weight::Bold, content: format!("{} ", lang.btn_prev_page()))
                         }
 
                         Text(
@@ -532,14 +480,7 @@ where
                                 f();
                             }
                         }) {
-                            View(
-                                border_style: BorderStyle::Single,
-                                border_color: theme.remaining,
-                                padding_left: 1,
-                                padding_right: 1,
-                            ) {
-                                Text(color: theme.highlight, weight: Weight::Bold, content: lang.btn_next_page().to_string())
-                            }
+                            Text(color: theme.highlight, weight: Weight::Bold, content: format!(" {}", lang.btn_next_page()))
                         }
                     }
                 })

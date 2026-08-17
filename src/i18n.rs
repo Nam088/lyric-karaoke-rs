@@ -94,7 +94,7 @@ fn default_add_folder_prompt() -> String {
     "Nhập đường dẫn thư mục:".to_string()
 }
 fn default_add_folder_hints() -> String {
-    "[Enter] Xác nhận lưu vào SQLite  •  [Esc] Hủy".to_string()
+    "[Enter] Lưu thư mục  •  [Esc] Hủy".to_string()
 }
 fn default_folder_empty() -> String {
     "Chưa có thư mục nào.".to_string()

@@ -15,7 +15,7 @@
   },
   "playlist": {
     "title": "PLAYLIST",
-    "folders_title": "MUSIC FOLDERS MANAGER (SQLITE)",
+    "folders_title": "MUSIC FOLDERS MANAGER",
     "close": "[x] Close",
     "footer_hints": "[↑/↓] Select  •  [←/→] Page  •  [Enter] Play  •  [F] Folders  •  [Esc/L] Close",
     "folder_footer_hints": "[↑/↓] Select  •  [←/→] Page  •  [A] Add  •  [D] Delete  •  [R] Rescan  •  [T/Esc] Tracks",
@@ -23,7 +23,7 @@
     "tracks_tab": "Tracks",
     "folders_tab": "Folders",
     "add_folder_prompt": "Enter music directory path:",
-    "add_folder_hints": "[Enter] Save to SQLite  •  [Esc] Cancel",
+    "add_folder_hints": "[Enter] Save folder  •  [Esc] Cancel",
     "folder_empty": "No music folders configured.",
     "folder_count": "tracks",
     "th_no": "#",

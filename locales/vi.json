@@ -15,7 +15,7 @@
   },
   "playlist": {
     "title": "DANH SÁCH BÀI HÁT",
-    "folders_title": "QUẢN LÝ THƯ MỤC NHẠC (SQLITE)",
+    "folders_title": "QUẢN LÝ THƯ MỤC NHẠC",
     "close": "[x] Đóng",
     "footer_hints": "[↑/↓] Chọn  •  [←/→] Lật trang  •  [Enter] Phát  •  [F] Thư Mục  •  [Esc/L] Đóng",
     "folder_footer_hints": "[↑/↓] Chọn  •  [←/→] Lật trang  •  [A] Thêm  •  [D] Xóa  •  [R] Quét lại  •  [T/Esc] Về DS",
@@ -23,7 +23,7 @@
     "tracks_tab": "Bài hát",
     "folders_tab": "Thư mục",
     "add_folder_prompt": "Nhập đường dẫn thư mục nhạc:",
-    "add_folder_hints": "[Enter] Xác nhận lưu vào SQLite  •  [Esc] Hủy",
+    "add_folder_hints": "[Enter] Lưu thư mục  •  [Esc] Hủy",
     "folder_empty": "Chưa có thư mục nào được cấu hình.",
     "folder_count": "bài",
     "th_no": "#",
