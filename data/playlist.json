@@ -26,5 +26,12 @@
         "artist": "Vũ Đăng ft. Long Nón Lá",
         "audio": "anhvangiu.mp3",
         "lyrics": "anhvangiu.json"
+    },
+    {
+        "id": "tran-trong",
+        "title": "Trân Trọng",
+        "artist": "Unknown Artist",
+        "audio": "Trân Trọng.mp3",
+        "lyrics": "Trân Trọng.json"
     }
 ]
