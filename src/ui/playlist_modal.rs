@@ -1,4 +1,4 @@
-//! Interactive Playlist & Music Folders Manager Modal Dialog with dynamic Pagination & clean Table Layout.
+//! Interactive Playlist & Music Folders Manager Modal Dialog with dynamic Pagination, Table Layout, and Delete Confirmation.
 
 use std::sync::{Arc, Mutex};
 
@@ -44,12 +44,25 @@ fn pad_truncate(s: &str, target_width: usize) -> String {
 }
 
 #[allow(clippy::too_many_arguments)]
-pub fn render<FSelect, FClose, FTabChange, FAddFolder, FRescan, FDeleteFolder, FSelectFolder, FPrevPage, FNextPage>(
+pub fn render<
+    FSelect,
+    FClose,
+    FTabChange,
+    FAddFolder,
+    FRescan,
+    FRequestDeleteFolder,
+    FConfirmDeleteFolder,
+    FCancelDeleteFolder,
+    FSelectFolder,
+    FPrevPage,
+    FNextPage,
+>(
     session: Arc<Session>,
     tab: ModalTab,
     cursor: usize,
     folder_cursor: usize,
     is_adding_folder: bool,
+    confirm_delete_index: Option<usize>,
     folder_input: &str,
     width: usize,
     lang: Language,
@@ -59,7 +72,9 @@ pub fn render<FSelect, FClose, FTabChange, FAddFolder, FRescan, FDeleteFolder, F
     on_tab_change: FTabChange,
     on_add_folder: FAddFolder,
     on_rescan: FRescan,
-    on_delete_folder: FDeleteFolder,
+    on_request_delete_folder: FRequestDeleteFolder,
+    on_confirm_delete_folder: FConfirmDeleteFolder,
+    on_cancel_delete_folder: FCancelDeleteFolder,
     on_select_folder: FSelectFolder,
     on_prev_page: FPrevPage,
     on_next_page: FNextPage,
@@ -70,7 +85,9 @@ where
     FTabChange: FnMut(ModalTab) + Send + 'static,
     FAddFolder: FnMut() + Send + 'static,
     FRescan: FnMut() + Send + 'static,
-    FDeleteFolder: FnMut(usize) + Send + 'static,
+    FRequestDeleteFolder: FnMut(usize) + Send + 'static,
+    FConfirmDeleteFolder: FnMut(usize) + Send + 'static,
+    FCancelDeleteFolder: FnMut() + Send + 'static,
     FSelectFolder: FnMut(usize) + Send + 'static,
     FPrevPage: FnMut() + Send + 'static,
     FNextPage: FnMut() + Send + 'static,
@@ -84,7 +101,9 @@ where
     let on_tab_change = Arc::new(Mutex::new(on_tab_change));
     let on_add_folder = Arc::new(Mutex::new(on_add_folder));
     let on_rescan = Arc::new(Mutex::new(on_rescan));
-    let on_delete_folder = Arc::new(Mutex::new(on_delete_folder));
+    let on_request_delete_folder = Arc::new(Mutex::new(on_request_delete_folder));
+    let on_confirm_delete_folder = Arc::new(Mutex::new(on_confirm_delete_folder));
+    let on_cancel_delete_folder = Arc::new(Mutex::new(on_cancel_delete_folder));
     let on_select_folder = Arc::new(Mutex::new(on_select_folder));
     let on_prev_page = Arc::new(Mutex::new(on_prev_page));
     let on_next_page = Arc::new(Mutex::new(on_next_page));
@@ -231,7 +250,7 @@ where
                     (theme.lyric_future, Weight::Normal)
                 };
 
-                let on_del = on_delete_folder.clone();
+                let on_req_del = on_request_delete_folder.clone();
                 let on_sel_f = on_select_folder.clone();
 
                 element! {
@@ -254,7 +273,7 @@ where
                             }
                         }
                         Button(handler: move |_| {
-                            if let Ok(mut f) = on_del.lock() {
+                            if let Ok(mut f) = on_req_del.lock() {
                                 f(idx);
                             }
                         }) {
@@ -282,6 +301,9 @@ where
         ModalTab::Tracks => (track_page + 1, track_total_pages, format!("{} {}", total_tracks, lang.folder_count())),
         ModalTab::Folders => (folder_page + 1, folder_total_pages, format!("{} {}", total_folders, lang.folders_tab())),
     };
+
+    let is_confirming = confirm_delete_index.is_some();
+    let is_busy = is_adding_folder || is_confirming;
 
     element! {
         View(
@@ -341,7 +363,7 @@ where
             }
 
             // Quick Toolbar for Folders Tab
-            #(if tab == ModalTab::Folders && !is_adding_folder {
+            #(if tab == ModalTab::Folders && !is_busy {
                 Some(element! {
                     View(
                         flex_direction: FlexDirection::Row,
@@ -370,7 +392,7 @@ where
             })
 
             // Table Column Headers
-            #(if !is_adding_folder {
+            #(if !is_busy {
                 Some(element! {
                     View(
                         flex_direction: FlexDirection::Row,
@@ -400,7 +422,7 @@ where
             })
 
             // Table Divider Rule
-            #(if !is_adding_folder {
+            #(if !is_busy {
                 Some(element! {
                     View(width: 100pct, margin_bottom: 1) {
                         Text(color: theme.remaining, content: "─".repeat(86))
@@ -415,7 +437,57 @@ where
                 #(match tab {
                     ModalTab::Tracks => track_rows,
                     ModalTab::Folders => {
-                        if is_adding_folder {
+                        if let Some(del_idx) = confirm_delete_index {
+                            let folder_path_str = folders.get(del_idx)
+                                .map(|p| p.display().to_string())
+                                .unwrap_or_else(|| String::from("---"));
+                            let on_conf = on_confirm_delete_folder.clone();
+                            let on_canc = on_cancel_delete_folder.clone();
+                            vec![
+                                element! {
+                                    View(
+                                        flex_direction: FlexDirection::Column,
+                                        border_style: BorderStyle::Single,
+                                        border_color: theme.paused,
+                                        padding: 1,
+                                        margin_bottom: 1,
+                                        width: 100pct,
+                                        align_items: AlignItems::Center,
+                                    ) {
+                                        Text(
+                                            color: theme.paused,
+                                            weight: Weight::Bold,
+                                            content: lang.confirm_delete_title().to_string(),
+                                        )
+                                        Text(
+                                            color: theme.highlight,
+                                            weight: Weight::Bold,
+                                            content: format!("  {}", folder_path_str),
+                                        )
+                                        View(flex_direction: FlexDirection::Row, margin_top: 1, margin_bottom: 1) {
+                                            Button(handler: move |_| {
+                                                if let Ok(mut f) = on_conf.lock() {
+                                                    f(del_idx);
+                                                }
+                                            }) {
+                                                Text(color: theme.paused, weight: Weight::Bold, content: format!("{}   ", lang.btn_confirm_yes()))
+                                            }
+                                            Button(handler: move |_| {
+                                                if let Ok(mut f) = on_canc.lock() {
+                                                    f();
+                                                }
+                                            }) {
+                                                Text(color: theme.highlight, weight: Weight::Bold, content: lang.btn_confirm_no().to_string())
+                                            }
+                                        }
+                                        Text(
+                                            color: theme.keybinds_dim,
+                                            content: lang.confirm_delete_hints().to_string(),
+                                        )
+                                    }
+                                }.into()
+                            ]
+                        } else if is_adding_folder {
                             vec![
                                 element! {
                                     View(
@@ -450,7 +522,7 @@ where
             }
 
             // Pagination Controls Bar (Clean & Flat)
-            #(if !is_adding_folder && total_p > 1 {
+            #(if !is_busy && total_p > 1 {
                 Some(element! {
                     View(
                         flex_direction: FlexDirection::Row,
@@ -500,7 +572,9 @@ where
                     content: match tab {
                         ModalTab::Tracks => lang.playlist_footer_hints().to_string(),
                         ModalTab::Folders => {
-                            if is_adding_folder {
+                            if is_confirming {
+                                lang.confirm_delete_hints().to_string()
+                            } else if is_adding_folder {
                                 lang.add_folder_hints().to_string()
                             } else {
                                 lang.folder_footer_hints().to_string()

@@ -76,6 +76,14 @@ pub struct PlaylistLocale {
     pub btn_next_page: String,
     #[serde(default = "default_page_info")]
     pub page_info: String,
+    #[serde(default = "default_confirm_delete_title")]
+    pub confirm_delete_title: String,
+    #[serde(default = "default_confirm_delete_hints")]
+    pub confirm_delete_hints: String,
+    #[serde(default = "default_btn_confirm_yes")]
+    pub btn_confirm_yes: String,
+    #[serde(default = "default_btn_confirm_no")]
+    pub btn_confirm_no: String,
 }
 
 fn default_folders_title() -> String {
@@ -146,6 +154,18 @@ fn default_btn_next_page() -> String {
 }
 fn default_page_info() -> String {
     "Trang".to_string()
+}
+fn default_confirm_delete_title() -> String {
+    "Xác nhận xóa thư mục khỏi danh sách?".to_string()
+}
+fn default_confirm_delete_hints() -> String {
+    "[Y / Enter] Đồng ý xóa  •  [N / Esc] Hủy bỏ".to_string()
+}
+fn default_btn_confirm_yes() -> String {
+    "[Y] Đồng ý xóa".to_string()
+}
+fn default_btn_confirm_no() -> String {
+    "[N] Hủy bỏ".to_string()
 }
 
 #[derive(Clone, Debug, Deserialize)]
@@ -361,6 +381,26 @@ impl Language {
     /// Page info label.
     pub fn page_info(self) -> &'static str {
         &self.config().playlist.page_info
+    }
+
+    /// Title for delete folder confirmation.
+    pub fn confirm_delete_title(self) -> &'static str {
+        &self.config().playlist.confirm_delete_title
+    }
+
+    /// Hints for delete folder confirmation.
+    pub fn confirm_delete_hints(self) -> &'static str {
+        &self.config().playlist.confirm_delete_hints
+    }
+
+    /// Button: Confirm yes.
+    pub fn btn_confirm_yes(self) -> &'static str {
+        &self.config().playlist.btn_confirm_yes
+    }
+
+    /// Button: Confirm no / cancel.
+    pub fn btn_confirm_no(self) -> &'static str {
+        &self.config().playlist.btn_confirm_no
     }
 
     /// Live badge text inside playlist modal.

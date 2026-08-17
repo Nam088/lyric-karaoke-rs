@@ -40,7 +40,11 @@
     "btn_delete": "[Xóa]",
     "btn_prev_page": "◀ Trước",
     "btn_next_page": "Sau ▶",
-    "page_info": "Trang"
+    "page_info": "Trang",
+    "confirm_delete_title": "Xác nhận xóa thư mục khỏi danh sách?",
+    "confirm_delete_hints": "[Y / Enter] Đồng ý xóa  •  [N / Esc] Hủy bỏ",
+    "btn_confirm_yes": "[Y] Đồng ý xóa",
+    "btn_confirm_no": "[N] Hủy bỏ"
   },
   "player": {
     "no_lyrics": "♫ ♪ ♫  (Bài hát không có lời / Instrumental)  ♫ ♪ ♫",

@@ -185,6 +185,7 @@ pub fn App(props: &AppProps, mut hooks: Hooks) -> impl Into<AnyElement<'static>>
     let mut modal_tab = hooks.use_state(playlist_modal::ModalTab::default);
     let mut folder_cursor = hooks.use_state(|| 0usize);
     let mut is_adding_folder = hooks.use_state(|| false);
+    let mut confirm_delete_folder = hooks.use_state(|| None::<usize>);
     let mut folder_input = hooks.use_state(String::new);
     let mut playlist_cursor = hooks.use_state(|| *session.track_index.read().unwrap());
     let mut render_past = hooks.use_state(|| config::RENDER_PAST_ON_START);
@@ -240,6 +241,27 @@ pub fn App(props: &AppProps, mut hooks: Hooks) -> impl Into<AnyElement<'static>>
 
         let is_modal = show_playlist.get();
         if is_modal {
+            if let Some(del_idx) = confirm_delete_folder.get() {
+                match code {
+                    KeyCode::Char('y') | KeyCode::Char('Y') | KeyCode::Enter => {
+                        let folders = s.list_music_folders();
+                        if let Some(f) = folders.get(del_idx) {
+                            let _ = s.remove_music_folder(f);
+                        }
+                        let remaining = s.list_music_folders().len();
+                        if folder_cursor.get() >= remaining && remaining > 0 {
+                            folder_cursor.set(remaining - 1);
+                        }
+                        confirm_delete_folder.set(None);
+                    }
+                    KeyCode::Char('n') | KeyCode::Char('N') | KeyCode::Esc => {
+                        confirm_delete_folder.set(None);
+                    }
+                    _ => {}
+                }
+                return;
+            }
+
             if is_adding_folder.get() {
                 match code {
                     KeyCode::Esc => {
@@ -279,14 +301,9 @@ pub fn App(props: &AppProps, mut hooks: Hooks) -> impl Into<AnyElement<'static>>
                             is_adding_folder.set(true);
                         }
                         KeyCode::Char('d') | KeyCode::Char('D') => {
-                            let folders = s.list_music_folders();
-                            let fc = folder_cursor.get();
-                            if let Some(f) = folders.get(fc) {
-                                let _ = s.remove_music_folder(f);
-                            }
-                            let remaining = s.list_music_folders().len();
-                            if folder_cursor.get() >= remaining && remaining > 0 {
-                                folder_cursor.set(remaining - 1);
+                            let f_len = s.list_music_folders().len();
+                            if f_len > 0 {
+                                confirm_delete_folder.set(Some(folder_cursor.get()));
                             }
                         }
                         KeyCode::Char('r') | KeyCode::Char('R') => {
@@ -495,6 +512,7 @@ pub fn App(props: &AppProps, mut hooks: Hooks) -> impl Into<AnyElement<'static>>
                     playlist_cursor.get(),
                     folder_cursor.get(),
                     is_adding_folder.get(),
+                    confirm_delete_folder.get(),
                     &input_str,
                     layout.box_width.saturating_sub(10),
                     current_lang,
@@ -518,6 +536,9 @@ pub fn App(props: &AppProps, mut hooks: Hooks) -> impl Into<AnyElement<'static>>
                         let _ = s_rescan.rescan_music_folders();
                     },
                     move |idx| {
+                        confirm_delete_folder.set(Some(idx));
+                    },
+                    move |idx| {
                         let folders = s_del.list_music_folders();
                         if let Some(f) = folders.get(idx) {
                             let _ = s_del.remove_music_folder(f);
@@ -526,6 +547,10 @@ pub fn App(props: &AppProps, mut hooks: Hooks) -> impl Into<AnyElement<'static>>
                         if folder_cursor.get() >= remaining && remaining > 0 {
                             folder_cursor.set(remaining - 1);
                         }
+                        confirm_delete_folder.set(None);
+                    },
+                    move || {
+                        confirm_delete_folder.set(None);
                     },
                     move |idx| {
                         folder_cursor.set(idx);

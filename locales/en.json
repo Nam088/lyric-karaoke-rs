@@ -40,7 +40,11 @@
     "btn_delete": "[Delete]",
     "btn_prev_page": "◀ Prev",
     "btn_next_page": "Next ▶",
-    "page_info": "Page"
+    "page_info": "Page",
+    "confirm_delete_title": "Are you sure you want to remove this folder?",
+    "confirm_delete_hints": "[Y / Enter] Confirm Delete  •  [N / Esc] Cancel",
+    "btn_confirm_yes": "[Y] Confirm Delete",
+    "btn_confirm_no": "[N] Cancel"
   },
   "player": {
     "no_lyrics": "♫ ♪ ♫  (Instrumental / No Lyrics Available)  ♫ ♪ ♫",
